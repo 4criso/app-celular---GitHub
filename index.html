@@ -364,6 +364,15 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
 .qz-end p{font-size:17px;margin:6px 0 16px}
 .qz-errs{text-align:left;background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;gap:4px;margin-bottom:16px;font-size:15px}
 .qz-end .tools{justify-content:center}
+.pbtn{width:auto;padding:0 12px;gap:6px;display:flex;align-items:center;font-weight:700;font-size:14px}
+@media(max-width:600px){.pbtn span{display:none}.pbtn{width:44px;padding:0;justify-content:center}}
+.pc-h{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:var(--panel,#173a5e)}.pc-h b{font-size:17px}
+.pc-row{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;margin-bottom:6px}
+.pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.pc-grid div{background:#e3ecf7;border-radius:12px;padding:10px 12px}
+.pc-grid b{display:block;font-size:24px;color:var(--panel,#173a5e)}.pc-grid span{font-size:13.5px;color:var(--ink2)}
+.pc-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.pc-act .btn{justify-content:center;min-height:46px}
+#progSum{margin-bottom:16px}
 </style>
 </head>
 <body>
@@ -389,6 +398,7 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
   <symbol id="i-volume" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-4"/><path d="M12 16V8"/><path d="M17 16v-7"/></symbol>
  </defs>
 </svg>
 
@@ -396,6 +406,7 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
   <header class="top">
     <div class="logo"><svg class="i"><use href="#i-headphones"/></svg></div>
     <div class="ttl"><b id="mtitle">Treino de Reunião</b><span id="mmeta">English Lab</span></div>
+    <button class="icon-btn pbtn" id="openProg" aria-label="Meu progresso"><svg class="i"><use href="#i-chart"/></svg><span>Progresso</span></button>
     <button class="icon-btn" id="openLib" aria-label="Biblioteca de reuniões"><svg class="i"><use href="#i-library"/></svg></button>
     <button class="icon-btn" id="openSet" aria-label="Ajustes"><svg class="i"><use href="#i-sliders"/></svg></button>
   </header>
@@ -440,8 +451,22 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
     <div class="opt"><label for="optQuiz">Modo teste<small>Esconde o português até você tocar</small></label><span class="sw"><input type="checkbox" id="optQuiz"><span></span></span></div>
     <div class="opt"><label for="optWake">Manter tela ligada ao tocar</label><span class="sw"><input type="checkbox" id="optWake"><span></span></span></div>
   </div>
+  <div class="grp">
+    <h4>Voz</h4>
+    <div class="voice"><div class="vn"><b id="vEnName">—</b><small>Inglês (EUA)</small></div><span class="tag" id="vEnTag" hidden>Recomendada</span><button class="btn sm" id="testEn"><svg class="i s"><use href="#i-volume"/></svg>Testar</button></div>
+    <div class="voice" style="border-top:1px solid var(--line)"><div class="vn"><b id="vPtName">—</b><small>Português (Brasil)</small></div><span class="tag" id="vPtTag" hidden>Recomendada</span><button class="btn sm" id="testPt"><svg class="i s"><use href="#i-volume"/></svg>Testar</button></div>
+    <details><summary>Trocar voz manualmente</summary>
+      <label class="tip" for="venv">Inglês</label><select id="venv"></select>
+      <label class="tip" for="vptv">Português</label><select id="vptv"></select>
+      <p class="tip">A voz recomendada é escolhida sozinha: a mais natural que o seu aparelho tem. No iPhone, se soar robótica: Ajustes › Acessibilidade › Conteúdo Falado › Vozes › Inglês, e baixe uma voz "Premium" ou "Avançada".</p>
+    </details>
+  </div>
+</aside>
+
+<aside class="sheet" id="progSheet" aria-label="Meu progresso" role="dialog">
+  <div class="sh-h"><h3>Meu progresso</h3><button class="icon-btn" data-close aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div id="progSum"></div>
   <div class="grp prog">
-    <h4>Meu progresso</h4>
     <p class="tip">Copie para guardar um backup, levar para o outro aparelho ou colar no chat do tutor.</p>
     <div class="tools" style="margin:6px 0 10px">
       <button class="btn dark" id="expBtn"><svg class="i s"><use href="#i-copy"/></svg>Copiar meu progresso</button>
@@ -453,16 +478,7 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
       <button class="btn sm dark" id="impBtn" style="margin-top:8px">Importar progresso</button>
     </details>
   </div>
-  <div class="grp">
-    <h4>Voz</h4>
-    <div class="voice"><div class="vn"><b id="vEnName">—</b><small>Inglês (EUA)</small></div><span class="tag" id="vEnTag" hidden>Recomendada</span><button class="btn sm" id="testEn"><svg class="i s"><use href="#i-volume"/></svg>Testar</button></div>
-    <div class="voice" style="border-top:1px solid var(--line)"><div class="vn"><b id="vPtName">—</b><small>Português (Brasil)</small></div><span class="tag" id="vPtTag" hidden>Recomendada</span><button class="btn sm" id="testPt"><svg class="i s"><use href="#i-volume"/></svg>Testar</button></div>
-    <details><summary>Trocar voz manualmente</summary>
-      <label class="tip" for="venv">Inglês</label><select id="venv"></select>
-      <label class="tip" for="vptv">Português</label><select id="vptv"></select>
-      <p class="tip">A voz recomendada é escolhida sozinha: a mais natural que o seu aparelho tem. No iPhone, se soar robótica: Ajustes › Acessibilidade › Conteúdo Falado › Vozes › Inglês, e baixe uma voz "Premium" ou "Avançada".</p>
-    </details>
-  </div>
+  <p class="tip">No PC, salve o arquivo na pasta <b>INGLÊS › 5 Sistema › progresso</b>. O tutor lê o mais recente a cada reunião nova.</p>
 </aside>
 
 <aside class="sheet quiz-sheet" id="quizSheet" aria-label="Teste de compreensão" role="dialog">
@@ -752,7 +768,7 @@ function renderBlockNav(){
     </div>
     <button class="tp-quiz" id="qzTheme">${ico('headphones','s')}Testar compreensão deste tema</button>
     </div></section>`;
-  renderToday();
+  renderToday(); renderProg();
 }
 function renderBlkList(){
   const m = M(); if(!m) return;
@@ -879,6 +895,10 @@ function progressText(){
   const code = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
   return lines.join('\n') + '\n\nCódigo de backup (não apague):\nELP1:' + code;
 }
+$('openProg').onclick = () => { renderProg(); openSheet('progSheet'); };
+document.addEventListener('click', e => { const b = e.target.closest('[data-pexp],[data-psave]'); if(!b) return;
+  if(b.hasAttribute('data-psave')) return $('expSave').onclick();
+  const txt = progressText(); navigator.clipboard?.writeText(txt).then(()=>toast('Progresso copiado. Cole no chat do tutor.'), ()=>{ renderProg(); openSheet('progSheet'); $('expBtn').click(); }); });
 $('expBtn').onclick = async () => { const txt = progressText(), box = $('expBox'); box.value = txt; box.hidden = false;
   try{ await navigator.clipboard.writeText(txt); toast('Progresso copiado'); }catch(e){ box.select(); toast('Selecionado: copie com Ctrl+C ou segure o dedo'); } };
 $('expSave').onclick = () => { try{ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([progressText()], {type:'text/plain'}));
@@ -909,6 +929,23 @@ function srsAnswer(k, ok){
 }
 function rowIndex(){ const ix = {}; for(const m of Object.values(lib)) for(const b of m.blocks) for(const r of b.rows) ix[baseId(m.id)+'|'+r.t] = {m, r}; return ix; }
 function dueList(){ const ix = rowIndex(), t = today(); return Object.entries(srs).filter(([k,v]) => v.due <= t && ix[k]).map(([k]) => k); }
+function progStats(){
+  const all = Object.values(lib); let tot = 0, ok = 0;
+  for(const m of all) for(const b of m.blocks) for(const r of b.rows){ tot++; if(known[m.id+'|'+r.t]) ok++; }
+  const last = qlog.slice(-5), acc = last.length ? Math.round(100*last.reduce((a,x)=>a+x.c,0)/last.reduce((a,x)=>a+x.n,0)) : null;
+  return {tot, ok, pct: tot ? Math.round(100*ok/tot) : 0, due: dueList().length, acc, tests: qlog.length};
+}
+function progHTML(st, card){
+  return `${card ? '<div class="pc-h">' + ico('chart') + '<b>Meu progresso</b></div>' : ''}
+    <div class="pc-row"><span>Termos aprendidos</span><b>${st.ok} de ${st.tot}</b></div>
+    <div class="tp-bar"><i style="width:${st.pct}%"></i></div>
+    <div class="pc-grid">
+      <div><b>${st.due}</b><span>para revisar hoje</span></div>
+      <div><b>${st.acc === null ? '—' : st.acc + '%'}</b><span>acerto nos testes</span></div>
+    </div>
+    ${card ? '<div class="pc-act"><button class="btn dark" data-pexp>' + ico('copy','s') + 'Copiar</button><button class="btn" data-psave>' + ico('upload','s') + 'Salvar arquivo</button></div>' : ''}`;
+}
+function renderProg(){ const st = progStats(); const c = $('progCard'); if(c) c.innerHTML = progHTML(st, true); const s = $('progSum'); if(s) s.innerHTML = progHTML(st, false); }
 function renderToday(){
   const el = $('todayBox'); if(!el) return; const n = dueList().length;
   el.innerHTML = n ? `<button class="today due" id="qzToday">${ico('repeat')}<span><b>Revisar hoje</b><small>${n} termo${n>1?'s':''} esperando você</small></span><span class="today-n">${n}</span></button>`
@@ -960,7 +997,7 @@ function answerQ(j){
   if(!ok) setTimeout(playQ, 300);
   $('qzNext').focus();
 }
-function endQ(){
+function endQ(){ setTimeout(renderProg, 0);
   const n = Q.qs.length, p = Math.round(100*Q.ok/n);
   qlog.push({d: today(), n, c: Q.ok}); qlog = qlog.slice(-60); store.set('el.qlog', qlog);
   $('qzBody').innerHTML = `<div class="qz-end"><div class="qz-score">${Q.ok} de ${n}</div><p>${p>=80?'Ótimo! Seu ouvido está pegando bem.':p>=50?'Bom caminho. Os erros voltam na revisão de amanhã.':'Normal no começo. Os erros voltam na revisão de amanhã.'}</p>
@@ -999,7 +1036,7 @@ $('main').addEventListener('click', e => {
     if(known[k]) delete known[k]; else { known[k] = 1; srsAdd(baseId(curId) + '|' + r.t, 2); } store.set('el.known', known);
     b.setAttribute('aria-pressed', !!known[k]); b.closest('.row').classList.toggle('known', !!known[k]);
     const m = M(), i = bIdx, kn = B().rows.filter(x=>known[kkey(x)]).length;
-    renderBlockNav();
+    renderBlockNav(); renderProg();
     $('mmeta').textContent = `${m.date} · ${m.blocks.reduce((a,x)=>a+x.rows.length,0)} termos · ${pctOf(m)}%`;
     if(pctOf(m) >= 80 && known[k]) toast('80% aprendido: pronta para assistir a reunião inteira!');
     return; }

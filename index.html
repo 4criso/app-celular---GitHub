@@ -795,7 +795,8 @@ function goBlock(i){ pause(); bIdx = i; curRow = 0; store.set(K('block'), bIdx);
 function markRow(i){
   document.querySelectorAll('.row').forEach(r=>r.classList.toggle('cur', +r.dataset.i===i));
   const el = document.querySelector(`.row[data-i="${i}"]`);
-  if(el && playing){ const rc = el.getBoundingClientRect(); if(rc.top < 70 || rc.bottom > innerHeight - 100) el.scrollIntoView({block:'center', behavior:'smooth'}); }
+  // phone: never scroll by itself, so the big panel stays on screen; desktop: the panel is pinned on the left, so follow the row
+  if(el && playing && matchMedia('(min-width:960px)').matches){ const rc = el.getBoundingClientRect(); if(rc.top < 70 || rc.bottom > innerHeight - 100) el.scrollIntoView({block:'center', behavior:'smooth'}); }
 }
 function renderLib(){
   const all = Object.values(lib).sort((a,b)=> b.added - a.added);

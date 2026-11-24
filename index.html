@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1216">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Treino de Reunião</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calm, professional SaaS tool used daily between calls, mostly on a phone
+   IDEA: a meeting "on air" console — the call's agenda becomes a playlist you rehearse
+   PICTURE: the dark stage: one big auto-fitting term, live repetition meter, voice wave, karaoke sentence
+   COLOUR/TYPE: neutral slate surfaces, black stage, one signal red for "live", green for "learned"; Inter only
+   LAYOUT: phone = stage, block chips, term list, sticky transport bar; desktop = stage+transport left (sticky), list right */
+:root{color-scheme:light dark;
+--bg:light-dark(#f4f5f7,#0b0d10);--surface:light-dark(#ffffff,#14171c);--surface2:light-dark(#f8f9fb,#1a1e24);
+--ink:light-dark(#0b1220,#f2f5f8);--ink2:light-dark(#1e293b,#dbe1e7);--mute:light-dark(#3f4b5b,#c2cad3);
+--line:light-dark(#cfd5dd,#3a414a);--line2:light-dark(#9aa4b1,#5b6573);
+--stage:#0f1216;--stage2:#171b21;--live:#ef2b2b;--live-soft:rgba(239,43,43,.14);--ok:light-dark(#15803d,#4ade80);--ok-soft:light-dark(#dcfce7,rgba(74,222,128,.14));
+--shadow:0 1px 2px rgba(16,24,40,.05),0 4px 16px rgba(16,24,40,.06);--shadow-lg:0 12px 40px rgba(16,24,40,.16);
+--r:14px;--safe-b:env(safe-area-inset-bottom,0px)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+:root.hc{--bg:light-dark(#e6ebf1,#0f1720);--surface:light-dark(#f9fafc,#17212c);--surface2:light-dark(#edf1f5,#1d2934);--ink:light-dark(#10233a,#eef3f8);--ink2:light-dark(#152a42,#dfe7ef);--mute:light-dark(#2c4058,#c9d4df);--line:light-dark(#2c4058,#8fa2b6);--line2:light-dark(#10233a,#c9d4df);--shadow:0 2px 8px rgba(16,35,58,.10);--ok:light-dark(#0b6b31,#5ee08f);--panel:#173a5e;--panel-edge:#0e2840}
+:root.hc[data-panel=graphite]{--panel:#2e3742;--panel-edge:#1e252d}
+:root.hc[data-panel=black]{--panel:#000;--panel-edge:#000}
+.hc .row,.hc .bn,.hc .bnb,.hc .icon-btn,.hc .rb,.hc .btn,.hc .grp,.hc .mt,.hc .blk{border-width:2px}
+.hc .stage{background:var(--panel);border:2px solid var(--panel-edge)}
+.hc .st-head,.hc .pron,.hc .hint,.hc .ln{color:#dce6f0}
+.hc .ln.on,.hc .term{color:#fff}
+.hc .ph{color:#fff;border-color:rgba(255,255,255,.75);background:transparent}
+.hc .ph.on,.hc .ph.on.yv{background:#ffd400;color:#000;border-color:#ffd400}
+.hc .ln .w.hl{background:#ffd400;color:#000;box-shadow:0 0 0 3px #ffd400}
+.hc .meter span{background:rgba(255,255,255,.22)}.hc .meter span.cur::after{background:#ffd400}
+.hc .row.cur{border-color:#ffd400;box-shadow:0 0 0 4px #ffd400}
+.hc .play.live{background:#ffd400;color:#10233a}
+.hc .stage.speaking .wave b{background:#ffd400}
+.hc .mic{background:#ffd400}.hc .mic svg{color:#000}.hc .you{color:#ffd400}.hc .ring .fg{stroke:#ffd400}
+.hc :focus-visible{outline:3px solid #ffd400;outline-offset:2px}
+html,body{margin:0}
+body{zoom:var(--z,1);background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.i.s{width:16px;height:16px}
+.app{max-width:1280px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) calc(96px + var(--safe-b))}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 0;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--stage);display:grid;place-items:center;color:#fff;flex:none;box-shadow:var(--shadow)}
+.logo svg{width:18px;height:18px}
+.ttl{flex:1;line-height:1.2}
+.ttl b{display:block;font-size:15px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl span{font-size:13.5px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.icon-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s,background .15s,border-color .15s}
+.icon-btn:hover{border-color:var(--line2);background:var(--surface2)}
+.icon-btn:active{transform:scale(.95)}
+:focus-visible{outline:2px solid var(--live);outline-offset:2px}
+
+.layout{display:grid;gap:16px}
+@media(min-width:960px){.layout{grid-template-columns:minmax(0,440px) minmax(0,1fr);align-items:start;gap:28px}.left{position:sticky;top:72px}}
+
+/* stage */
+.stage{position:relative;background:radial-gradient(120% 90% at 100% 0%,#1d232b 0%,var(--stage) 55%);color:#f1f4f7;border-radius:20px;padding:18px 18px 20px;box-shadow:var(--shadow-lg);overflow:hidden;isolation:isolate}
+.stage::after{content:"";position:absolute;inset:0;border-radius:inherit;border:1px solid rgba(255,255,255,.06);pointer-events:none}
+.st-head{display:flex;align-items:center;gap:8px;font-size:13.5px;color:#cfd6de}
+.onair{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;background:rgba(255,255,255,.06);font-weight:600;color:#c7ced7;transition:background .2s,color .2s}
+.onair i{width:7px;height:7px;border-radius:50%;background:#5b6573}
+.stage.live .onair{background:var(--live-soft);color:#ff8a8a}
+.stage.live .onair i{background:var(--live);box-shadow:0 0 0 0 var(--live);animation:ping 1.4s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(239,43,43,.6)}80%,100%{box-shadow:0 0 0 8px rgba(239,43,43,0)}}
+.st-pos{margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+#stBlock{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.onair{flex:none}
+.phases{display:flex;gap:6px;margin:14px 0 4px;flex-wrap:wrap}
+.ph{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;color:#c7ced7;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);transition:all .25s}
+.ph.on{color:#fff;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.18)}
+.ph.on.yv{background:var(--live);border-color:var(--live)}
+.termbox{min-height:110px;display:flex;align-items:center;margin-top:6px;padding:6px 0}
+.term{width:100%;font-weight:800;letter-spacing:-.035em;line-height:1.02;overflow-wrap:normal;word-break:normal;hyphens:none;transition:transform .25s cubic-bezier(.2,.8,.2,1),text-shadow .25s,opacity .25s}
+.term.pulse{animation:pulse .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes pulse{0%{transform:scale(.97);opacity:.6}60%{transform:scale(1.025);text-shadow:0 0 28px rgba(255,255,255,.35)}100%{transform:scale(1);opacity:1}}
+.pron{display:inline-flex;align-items:center;gap:6px;font-size:16px;color:#dfe4ea;margin-top:6px}
+.meter{display:flex;gap:4px;margin:14px 0 2px}
+.meter span{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden;position:relative}
+.meter span::after{content:"";position:absolute;inset:0;background:#fff;transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
+.meter span.done::after{transform:scaleX(1)}
+.meter span.cur::after{transform:scaleX(1);background:var(--live)}
+.lines{margin-top:14px;display:grid;gap:8px;min-height:88px}
+.ln{font-size:17px;line-height:1.45;color:#aeb7c2;transition:color .3s,opacity .3s}
+.ln.pt{font-size:16px}
+.ln.on{color:#f1f4f7}
+.ln .w{transition:color .12s,background .12s,box-shadow .12s;border-radius:4px}
+.ln .w.hl{color:#fff;background:rgba(239,43,43,.35);box-shadow:0 0 0 2px rgba(239,43,43,.35)}
+.ln .w.past{color:#e5e9ee}
+.ln.hide{opacity:0}
+.st-foot{display:flex;align-items:center;gap:12px;margin-top:14px;min-height:28px}
+.wave{display:flex;align-items:center;gap:3px;height:24px}
+.wave b{width:3px;height:6px;border-radius:2px;background:#5b6573;transition:background .2s}
+.stage.speaking .wave b{background:#fff;animation:wv .9s ease-in-out infinite}
+.stage.speaking .wave b:nth-child(2){animation-delay:-.75s}.stage.speaking .wave b:nth-child(3){animation-delay:-.6s}.stage.speaking .wave b:nth-child(4){animation-delay:-.45s}.stage.speaking .wave b:nth-child(5){animation-delay:-.3s}.stage.speaking .wave b:nth-child(6){animation-delay:-.15s}.stage.speaking .wave b:nth-child(7){animation-delay:-.5s}
+@keyframes wv{0%,100%{height:5px}50%{height:22px}}
+.you{display:none;align-items:center;gap:10px;font-size:13px;font-weight:600;color:#ffb4b4}
+.stage.yourturn .you{display:flex}
+.stage.yourturn .wave{display:none}
+.ring{width:26px;height:26px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:3}
+.ring .bgc{stroke:rgba(255,255,255,.12)}
+.ring .fg{stroke:var(--live);stroke-dasharray:69.1;stroke-dashoffset:0}
+.stage.yourturn .ring .fg{animation:drain var(--d,2s) linear forwards}
+@keyframes drain{to{stroke-dashoffset:69.1}}
+.mic{width:26px;height:26px;border-radius:50%;background:var(--live);display:grid;place-items:center;animation:ping 1.4s infinite}
+.mic svg{width:14px;height:14px;color:#fff}
+.hint{font-size:13.5px;color:#cfd6de;margin-left:auto;text-align:right}
+
+@media(max-width:600px){.stage{padding:14px 16px 16px;border-radius:18px}.termbox{min-height:96px}.lines{min-height:0;margin-top:10px;gap:6px}.phases{margin-top:10px}.meter{margin-top:10px}.st-foot{margin-top:10px}}
+/* transport */
+.transport{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px max(16px,env(safe-area-inset-left)) calc(10px + var(--safe-b));background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+.tp{max-width:520px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:6px}
+@media(min-width:960px){.transport{position:static;padding:0;background:none;border:0;backdrop-filter:none;margin-top:14px}.tp{max-width:none;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px 12px;box-shadow:var(--shadow)}}
+.tb{width:48px;height:48px;border-radius:14px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ink2);position:relative;transition:background .15s,color .15s,transform .12s}
+.tb:hover{background:var(--surface2);color:var(--ink)}
+.tb:active{transform:scale(.92)}
+.tb.on{color:var(--live)}
+.tb .badge{position:absolute;bottom:6px;right:6px;font-size:9px;font-weight:800;background:var(--live);color:#fff;border-radius:6px;padding:0 3px;line-height:13px}
+.tb.txt{width:auto;padding:0 10px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.play{width:60px;height:60px;border-radius:50%;border:0;background:var(--ink);color:var(--surface);display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 20px rgba(15,23,42,.25);transition:transform .15s,box-shadow .15s}
+.play:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(15,23,42,.3)}
+.play:active{transform:scale(.94)}
+.play svg{width:24px;height:24px}
+.play.live{background:var(--live);color:#fff;box-shadow:0 6px 22px rgba(239,43,43,.4)}
+
+/* blocks */
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 10px}
+.sec-h h2{font-size:21px;font-weight:700;letter-spacing:-.015em;margin:0}
+.sec-h p{margin:2px 0 0;font-size:15px;color:var(--mute)}
+.chips{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;padding:2px 2px 10px;margin:0 -2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;scroll-snap-align:start;display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 14px 6px 8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;box-shadow:var(--shadow);transition:all .18s;text-align:left}
+.chip:hover{border-color:var(--line2);transform:translateY(-1px)}
+.chip b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap}
+.chip small{display:block;font-size:11.5px;color:var(--mute)}
+.chip[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.chip[aria-selected=true] small{color:inherit;opacity:.7}
+.pr{width:30px;height:30px;flex:none;transform:rotate(-90deg)}
+.pr circle{fill:none;stroke-width:3.5}
+.pr .bgc{stroke:var(--line)}
+.pr{width:34px;height:34px}
+.chip[aria-selected=true] .pr .bgc{stroke:rgba(255,255,255,.2)}
+.pr .fg{stroke:var(--ok);stroke-linecap:round;transition:stroke-dashoffset .4s}
+
+/* no-voice banner */
+.novoice{background:#fff7d6;color:#1a1300;border:2px solid #e0b100;border-radius:16px;padding:16px 18px;margin:0 0 16px;font-size:16px;line-height:1.45}
+.novoice b{display:block;font-size:18px;margin-bottom:6px}
+.novoice ol{margin:8px 0 12px;padding-left:22px}.novoice li{margin:4px 0}
+.novoice .lk{font-size:14px;word-break:break-all;background:#fff;border:1px solid #e0b100;border-radius:8px;padding:6px 8px;margin:8px 0}
+.novoice .btn{background:#1a1300;color:#fff;border-color:#1a1300}
+/* topic picker */
+.topic{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;margin:0 0 16px;box-shadow:var(--shadow)}
+.tp-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;color:var(--mute);font-weight:600}
+.tp-title{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:6px 0 4px}
+.tp-desc{font-size:15px;color:var(--ink2);margin:0 0 12px}
+.tp-bar,.bk-bar{height:8px;border-radius:4px;background:var(--surface2);border:1px solid var(--line);overflow:hidden}
+.tp-bar i,.bk-bar i{display:block;height:100%;background:var(--ok);border-radius:4px;transition:width .4s}
+.tp-actions{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:8px;margin-top:14px}
+.tp-btn{min-height:50px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:background .15s,border-color .15s,transform .12s}
+.tp-btn:hover{background:var(--surface2);border-color:var(--line2)}.tp-btn:active{transform:scale(.97)}
+.tp-btn:disabled{opacity:.35;cursor:default}
+.tp-btn.main{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.tp-btn svg{width:18px;height:18px}
+.hc .topic,.hc .tp-btn{border-width:2px}
+.drawer-sub{font-size:14px;color:var(--mute);margin:-6px 0 14px}
+.blk{width:100%;display:flex;align-items:center;gap:14px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 14px;margin-bottom:10px;cursor:pointer;color:var(--ink);transition:border-color .15s,background .15s}
+.blk:hover{border-color:var(--line2);background:var(--surface2)}
+.bk-n{width:38px;height:38px;flex:none;border-radius:10px;background:var(--surface2);border:1px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:16px}
+.bk-t{flex:1;display:grid;gap:5px}
+.bk-t b{font-size:16.5px;line-height:1.25}
+.bk-t small{font-size:13.5px;color:var(--mute)}
+.blk[aria-current=true]{border-color:var(--ink);border-width:2px;background:var(--surface2)}
+.blk[aria-current=true] .bk-n{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bk-now{font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px;background:var(--ink);color:var(--surface);flex:none}
+.bk-done .bk-n{background:var(--ok);border-color:var(--ok);color:#fff}
+/* rows */
+.list{display:grid;gap:8px}
+.row{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);transition:border-color .2s,box-shadow .2s,transform .2s;overflow:hidden}
+.row:hover{border-color:var(--line2)}
+.row.cur{border-color:var(--live);box-shadow:0 0 0 3px var(--live-soft),var(--shadow)}
+.rmain{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 14px}
+.num{width:26px;font-size:14px;font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums;flex:none}
+.row.cur .num{color:var(--live)}
+.rtxt{flex:1;cursor:pointer;padding:2px 0}
+.rtxt b{display:block;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.rtxt span{display:block;font-size:16px;color:var(--ink2)}
+.rtxt em{font-style:normal;font-size:14px;color:var(--mute)}
+.rb{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);display:grid;place-items:center;cursor:pointer;color:var(--ink2);flex:none;transition:all .15s}
+.rb:hover{color:var(--ink);border-color:var(--line2)}
+.rb:active{transform:scale(.93)}
+.rb.k[aria-pressed=true]{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.row.known .rtxt b{color:var(--mute)}
+.rmore{display:none;padding:0 14px 14px 52px;font-size:16px;color:var(--ink2);gap:10px}
+.row.open .rmore{display:grid}
+.rmore .ex b{font-weight:600;color:var(--ink)}
+.quote{font-size:14px;color:var(--mute);border-left:2px solid var(--line2);padding-left:10px}
+.tm{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink2);background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:0 6px;margin-right:6px}
+.quiz .pt{filter:blur(5px);transition:filter .2s;cursor:pointer}
+.quiz .pt.show{filter:none}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);transition:all .15s;color:var(--ink)}
+.btn:hover{border-color:var(--line2);background:var(--surface2)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn.danger{color:var(--live)}
+.btn.sm{min-height:34px;padding:0 10px;font-size:12.5px}
+
+/* empty */
+.empty{background:var(--surface);border:1px dashed var(--line2);border-radius:20px;padding:32px 20px;text-align:center}
+.empty h3{margin:12px 0 6px;font-size:18px}
+.empty p{color:var(--mute);margin:0 auto 18px;max-width:380px;font-size:14px}
+.empty .logo{margin:0 auto;width:48px;height:48px;border-radius:14px}
+
+/* sheets */
+.scrim{position:fixed;inset:0;z-index:40;background:rgba(10,20,35,.45);opacity:0;pointer-events:none;transition:opacity .5s ease}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;z-index:50;top:0;right:0;bottom:0;width:min(88vw,420px);overflow:auto;overscroll-behavior:contain;background:var(--surface);border-radius:22px 0 0 22px;padding:calc(16px + env(safe-area-inset-top,0px)) 18px calc(24px + var(--safe-b));transform:translate3d(100%,0,0);visibility:hidden;transition:transform .55s cubic-bezier(.32,.72,0,1),visibility 0s linear .55s,box-shadow .55s;box-shadow:none;will-change:transform}
+.sheet.open{transform:translate3d(0,0,0);visibility:visible;transition:transform .55s cubic-bezier(.32,.72,0,1),visibility 0s,box-shadow .55s;box-shadow:-18px 0 50px rgba(10,20,35,.28)}
+
+.grab{display:none}
+.sh-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sh-h h3{margin:0;font-size:18px;font-weight:700}
+.grp{border:1px solid var(--line);border-radius:14px;padding:4px 14px;margin-bottom:14px;background:var(--surface2)}
+.grp h4{margin:10px 0 2px;font-size:14px;color:var(--mute);font-weight:600}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;border-bottom:1px solid var(--line)}
+.opt:last-child{border-bottom:0}
+.opt.wrap{flex-wrap:wrap;padding:10px 0}.opt.wrap .seg{width:100%}.opt.wrap .seg button{flex:1}
+.opt label{font-size:16px;font-weight:500}
+.opt small{display:block;font-size:13.5px;color:var(--mute);font-weight:400}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:6px 10px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--mute);min-height:32px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--surface)}
+.step{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.step button{width:36px;height:36px;border:0;background:none;cursor:pointer;font-size:18px;color:var(--ink2)}
+.step output{min-width:44px;text-align:center;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.sw{position:relative;width:46px;height:28px;flex:none}
+.sw input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer;z-index:1}
+.sw span{position:absolute;inset:0;border-radius:999px;background:var(--line2);transition:background .2s}
+.sw span::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+.sw input:checked+span{background:var(--live)}
+.sw input:checked+span::after{transform:translateX(18px)}
+.sw input:focus-visible+span{outline:2px solid var(--live);outline-offset:2px}
+.voice{display:flex;align-items:center;gap:10px;padding:12px 0}
+.voice .vn{flex:1}
+.voice .vn b{display:block;font-size:14px}
+.voice .vn small{color:var(--mute);font-size:12px}
+.tag{font-size:11px;font-weight:700;color:var(--ok);background:var(--ok-soft);border-radius:6px;padding:1px 6px}
+details{padding:4px 0 10px}
+summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--mute);min-height:32px;display:flex;align-items:center}
+select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 10px;font-size:15px;margin-top:6px}
+.tip{font-size:14px;color:var(--mute);margin:8px 0}
+.mt{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:var(--surface);transition:border-color .15s}
+.mt.active{border-color:var(--ink)}
+.mt-h{display:flex;align-items:center;gap:10px}
+.mt-h .ttx{flex:1}
+.mt-h b{display:block;font-size:14.5px}
+.mt-h small{color:var(--mute);font-size:12px}
+.bar{height:6px;border-radius:3px;background:var(--line);margin:10px 0;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:3px;transition:width .4s}
+.pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);color:var(--ink2);white-space:nowrap}
+.pill.ready{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.pill.done{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.confirm{display:none;align-items:center;gap:8px;margin-top:8px;font-size:13px}
+.confirm.open{display:flex}
+.toast{position:fixed;left:50%;bottom:calc(100px + var(--safe-b));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-size:13.5px;font-weight:600;z-index:60;transition:all .25s;pointer-events:none;box-shadow:var(--shadow-lg);max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media(prefers-reduced-motion:reduce){*:not(.sheet):not(.scrim),*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <defs>
+  <symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol>
+  <symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></symbol>
+  <symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+ </defs>
+</svg>
+
+<div class="app">
+  <header class="top">
+    <div class="logo"><svg class="i"><use href="#i-headphones"/></svg></div>
+    <div class="ttl"><b id="mtitle">Treino de Reunião</b><span id="mmeta">English Lab</span></div>
+    <button class="icon-btn" id="openLib" aria-label="Biblioteca de reuniões"><svg class="i"><use href="#i-library"/></svg></button>
+    <button class="icon-btn" id="openSet" aria-label="Ajustes"><svg class="i"><use href="#i-sliders"/></svg></button>
+  </header>
+
+  <div id="main"></div>
+</div>
+
+<div class="transport" id="transport" hidden>
+  <div class="tp">
+    <button class="tb txt" id="speedBtn" aria-label="Velocidade">0.85×</button>
+    <button class="tb" id="prev" aria-label="Linha anterior"><svg class="i"><use href="#i-prev"/></svg></button>
+    <button class="play" id="play" aria-label="Tocar"><svg class="i"><use href="#i-play"/></svg></button>
+    <button class="tb" id="next" aria-label="Próxima linha"><svg class="i"><use href="#i-next"/></svg></button>
+    <button class="tb" id="repeatBtn" aria-label="Repetição"><svg class="i"><use href="#i-repeat"/></svg><span class="badge" id="repBadge" hidden>1</span></button>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+
+<aside class="sheet" id="setSheet" aria-label="Ajustes" role="dialog">
+  <div class="grab"></div>
+  <div class="sh-h"><h3>Ajustes</h3><button class="icon-btn" data-close aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="grp">
+    <h4>Aparência</h4>
+    <div class="opt wrap"><label>Cor do painel<small>Bordas fortes e destaque amarelo; "Clássico" é o visual leve</small></label>
+      <div class="seg" id="panelSeg"><button data-v="navy">Marinho</button><button data-v="graphite">Grafite</button><button data-v="black">Preto</button><button data-v="soft">Clássico</button></div></div>
+  </div>
+  <div class="grp">
+    <h4>Repetição</h4>
+    <div class="opt wrap"><label>O que repetir<small>Só a palavra, ou a linha inteira</small></label>
+      <div class="seg" id="unitSeg"><button data-v="term">Termo</button><button data-v="row">Linha</button></div></div>
+    <div class="opt"><label>Quantas vezes</label><div class="step"><button data-step="reps" data-d="-1" aria-label="Menos">−</button><output id="oreps">7</output><button data-step="reps" data-d="1" aria-label="Mais">+</button></div></div>
+    <div class="opt"><label>Pausa entre repetições</label><div class="step"><button data-step="pause" data-d="-0.2" aria-label="Menos">−</button><output id="opause">1.2s</output><button data-step="pause" data-d="0.2" aria-label="Mais">+</button></div></div>
+    <div class="opt wrap"><label>Ao terminar a linha / o bloco</label>
+      <div class="seg" id="repSeg"><button data-v="off">Parar</button><button data-v="block">Repetir bloco</button><button data-v="one">Repetir linha</button></div></div>
+  </div>
+  <div class="grp">
+    <h4>O que tocar</h4>
+    <div class="opt"><label for="optPt">Tradução em português</label><span class="sw"><input type="checkbox" id="optPt"><span></span></span></div>
+    <div class="opt"><label for="optEx">Frase de exemplo</label><span class="sw"><input type="checkbox" id="optEx"><span></span></span></div>
+    <div class="opt"><label for="optEcho">Modo eco<small>Pausa para você repetir em voz alta</small></label><span class="sw"><input type="checkbox" id="optEcho"><span></span></span></div>
+    <div class="opt"><label for="optSkip">Pular os que já sei</label><span class="sw"><input type="checkbox" id="optSkip"><span></span></span></div>
+    <div class="opt"><label for="optQuiz">Modo teste<small>Esconde o português até você tocar</small></label><span class="sw"><input type="checkbox" id="optQuiz"><span></span></span></div>
+    <div class="opt"><label for="optWake">Manter tela ligada ao tocar</label><span class="sw"><input type="checkbox" id="optWake"><span></span></span></div>
+  </div>
+  <div class="grp">
+    <h4>Voz</h4>
+    <div class="voice"><div class="vn"><b id="vEnName">—</b><small>Inglês (EUA)</small></div><span class="tag" id="vEnTag" hidden>Recomendada</span><button class="btn sm" id="testEn"><svg class="i s"><use href="#i-volume"/></svg>Testar</button></div>
+    <div class="voice" style="border-top:1px solid var(--line)"><div class="vn"><b id="vPtName">—</b><small>Português (Brasil)</small></div><span class="tag" id="vPtTag" hidden>Recomendada</span><button class="btn sm" id="testPt"><svg class="i s"><use href="#i-volume"/></svg>Testar</button></div>
+    <details><summary>Trocar voz manualmente</summary>
+      <label class="tip" for="venv">Inglês</label><select id="venv"></select>
+      <label class="tip" for="vptv">Português</label><select id="vptv"></select>
+      <p class="tip">A voz recomendada é escolhida sozinha: a mais natural que o seu aparelho tem. No iPhone, se soar robótica: Ajustes › Acessibilidade › Conteúdo Falado › Vozes › Inglês, e baixe uma voz "Premium" ou "Avançada".</p>
+    </details>
+  </div>
+</aside>
+
+<aside class="sheet" id="blkSheet" aria-label="Blocos" role="dialog">
+  <div class="grab"></div>
+  <div class="sh-h"><h3>Temas para estudar</h3><button class="icon-btn" data-close aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <p class="drawer-sub" id="blkSub"></p>
+  <div id="blkList"></div>
+</aside>
+
+<aside class="sheet" id="libSheet" aria-label="Biblioteca" role="dialog">
+  <div class="grab"></div>
+  <div class="sh-h"><h3>Minhas reuniões</h3><button class="icon-btn" data-close aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="tools" style="margin-bottom:14px">
+    <label class="btn dark" style="position:relative"><svg class="i s"><use href="#i-upload"/></svg>Importar reunião (.json)<input type="file" id="file" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+  </div>
+  <details class="grp" style="padding:4px 14px 12px"><summary>Não consegue escolher o arquivo? Cole o conteúdo</summary>
+    <p class="tip">Abra o .json em qualquer app de texto, copie tudo e cole aqui.</p>
+    <textarea id="pasteBox" rows="4" style="width:100%;font:13px ui-monospace,monospace;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px"></textarea>
+    <button class="btn sm dark" id="pasteBtn" style="margin-top:8px">Importar texto colado</button>
+  </details>
+  <div id="libList"></div>
+  <p class="tip">Fluxo: <b>Estudando</b> → ao marcar 80% dos termos fica <b>Pronta para assistir</b> → assista à gravação inteira → marque <b>Compreendida</b> (vai para o arquivo; dá para reabrir) ou remova. As reuniões ficam salvas neste aparelho; o arquivo .json no OneDrive é o seu backup.</p>
+</aside>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+const EMBED = [{"id": "townhall-2026-11-20-pub", "title": "Town Hall global", "date": "20/11/2026", "length": "59 min", "blocks": [{"title": "Abertura e regras da call", "desc": "Como a reunião começa: boas-vindas, pauta e avisos.", "rows": [{"t": "welcome", "p": "uél-kâm", "tr": "bem-vindo(s) / boas-vindas", "ex": "Welcome to the meeting.", "exp": "Bem-vindos à reunião.", "q": "", "tm": "00:07"}, {"t": "agenda", "p": "â-djén-dâ", "tr": "pauta", "ex": "Let's look at the agenda.", "exp": "Vamos ver a pauta.", "q": "", "tm": "00:31"}, {"t": "housekeeping rules", "p": "ráus-kí-pin rúls", "tr": "avisos gerais / regras básicas", "ex": "Here are some housekeeping rules.", "exp": "Aqui vão alguns avisos gerais.", "q": "", "tm": "00:31"}, {"t": "muted", "p": "miú-tid", "tr": "no mudo", "ex": "Your microphone is muted.", "exp": "Seu microfone está no mudo.", "q": "", "tm": "00:36"}, {"t": "by default", "p": "bái di-fólt", "tr": "por padrão", "ex": "The camera is off by default.", "exp": "A câmera fica desligada por padrão.", "q": "", "tm": "00:40"}, {"t": "Q&A", "p": "kiú ênd ei", "tr": "perguntas e respostas", "ex": "We have time for Q&A.", "exp": "Temos tempo para perguntas e respostas.", "q": "", "tm": "00:44"}, {"t": "update", "p": "âp-dêit", "tr": "atualização / novidade", "ex": "I have an important update.", "exp": "Tenho uma atualização importante.", "q": "", "tm": "01:05"}, {"t": "feedback", "p": "fíd-bék", "tr": "retorno / opinião", "ex": "Please share your feedback.", "exp": "Por favor, compartilhe sua opinião.", "q": "", "tm": "01:28"}, {"t": "run out of time", "p": "rân áut âv táim", "tr": "ficar sem tempo", "ex": "We ran out of time.", "exp": "Ficamos sem tempo.", "q": "", "tm": "00:56"}, {"t": "next slide", "p": "nékst sláid", "tr": "próximo slide", "ex": "Next slide, please.", "exp": "Próximo slide, por favor.", "q": "", "tm": "27:48"}]}, {"title": "Números do negócio", "desc": "Resultados financeiros: o bloco mais próximo do seu trabalho.", "rows": [{"t": "revenue", "p": "ré-vâ-niu", "tr": "receita", "ex": "Is revenue higher than last year?", "exp": "A receita está maior que no ano passado?", "q": "", "tm": "10:01"}, {"t": "ARR", "p": "ei ár ár", "tr": "receita recorrente anual", "ex": "Our ARR is growing every month.", "exp": "Nossa receita recorrente anual cresce todo mês.", "q": "", "tm": "08:59"}, {"t": "bookings", "p": "bú-kins", "tr": "vendas fechadas (contratos assinados)", "ex": "Bookings are below plan this month.", "exp": "As vendas fechadas estão abaixo do plano neste mês.", "q": "", "tm": "09:13"}, {"t": "profit", "p": "pró-fit", "tr": "lucro", "ex": "The profit is lower this quarter.", "exp": "O lucro está menor neste trimestre.", "q": "", "tm": "09:32"}, {"t": "forecast", "p": "fór-kést", "tr": "previsão", "ex": "The full-year forecast is unchanged.", "exp": "A previsão do ano não mudou.", "q": "", "tm": "09:57"}, {"t": "budget", "p": "bâ-djit", "tr": "orçamento", "ex": "Are we below the budget?", "exp": "Estamos abaixo do orçamento?", "q": "", "tm": "10:06"}, {"t": "below plan", "p": "bi-lôu plén", "tr": "abaixo do planejado", "ex": "Sales are below plan.", "exp": "As vendas estão abaixo do planejado.", "q": "", "tm": "09:24"}, {"t": "versus last month", "p": "vâr-sâs lést mânth", "tr": "em relação ao mês passado", "ex": "Costs are higher versus last month.", "exp": "Os custos estão maiores em relação ao mês passado.", "q": "", "tm": "09:41"}, {"t": "under pressure", "p": "ân-dâr pré-shâr", "tr": "sob pressão", "ex": "Margins are under pressure.", "exp": "As margens estão sob pressão.", "q": "", "tm": "09:41"}, {"t": "subscription", "p": "sâb-skríp-shân", "tr": "assinatura", "ex": "SaaS is a subscription business.", "exp": "SaaS é um negócio de assinatura.", "q": "", "tm": "09:02"}, {"t": "cost disciplined", "p": "kóst dí-si-plind", "tr": "com disciplina de custos", "ex": "We need to stay cost disciplined.", "exp": "Precisamos manter a disciplina de custos.", "q": "", "tm": "10:37"}]}, {"title": "Fechamento do ano", "desc": "Mensagem sobre o fim do ano e o próximo ano.", "rows": [{"t": "closing out the year", "p": "klôu-zin áut dâ íâr", "tr": "fechar o ano", "ex": "We are focused on closing out the year.", "exp": "Estamos focados em fechar o ano.", "q": "", "tm": "13:30"}, {"t": "remainder of the year", "p": "ri-mêin-dâr âv dâ íâr", "tr": "restante do ano", "ex": "This is our priority for the remainder of the year.", "exp": "Esta é nossa prioridade no restante do ano.", "q": "", "tm": "13:52"}, {"t": "finishing line", "p": "fí-ni-shin láin", "tr": "linha de chegada", "ex": "We need to bring the projects over the finishing line.", "exp": "Precisamos levar os projetos até a linha de chegada.", "q": "", "tm": "13:40"}, {"t": "go-live", "p": "gôu-láiv", "tr": "entrada em produção", "ex": "The go-live is in December.", "exp": "A entrada em produção é em dezembro.", "q": "", "tm": "13:47"}, {"t": "progress", "p": "pró-grés", "tr": "progresso", "ex": "We are making progress.", "exp": "Estamos fazendo progresso.", "q": "", "tm": "11:37"}, {"t": "patience", "p": "pêi-shâns", "tr": "paciência", "ex": "It will require patience and time.", "exp": "Vai exigir paciência e tempo.", "q": "", "tm": "11:46"}, {"t": "contribution", "p": "kón-tri-biú-shân", "tr": "contribuição", "ex": "Thank you for your contribution.", "exp": "Obrigado pela sua contribuição.", "q": "", "tm": "11:27"}, {"t": "foundation", "p": "fáun-dêi-shân", "tr": "base / alicerce", "ex": "We have a stronger foundation for 2027.", "exp": "Temos uma base mais forte para 2027.", "q": "", "tm": "15:27"}, {"t": "hockey stick", "p": "ró-ki stík", "tr": "\"taco de hóquei\": resultado concentrado no fim do período", "ex": "Our sales look like a hockey stick.", "exp": "Nossas vendas se concentram no fim do período.", "q": "", "tm": "13:36"}]}, {"title": "Pipeline de vendas", "desc": "Como surgem os novos negócios.", "rows": [{"t": "pipeline", "p": "páip-láin", "tr": "carteira de oportunidades", "ex": "The pipeline is the engine of our growth.", "exp": "O pipeline é o motor do nosso crescimento.", "q": "", "tm": "26:37"}, {"t": "lead", "p": "líd", "tr": "contato interessado", "ex": "We received a new lead.", "exp": "Recebemos um novo contato interessado.", "q": "", "tm": "19:09"}, {"t": "prospect", "p": "pró-spékt", "tr": "cliente em potencial", "ex": "The prospect wants more information.", "exp": "O cliente em potencial quer mais informações.", "q": "", "tm": "18:11"}, {"t": "opportunity", "p": "ó-pâr-tiú-ni-ti", "tr": "oportunidade (de venda)", "ex": "We have many open opportunities.", "exp": "Temos muitas oportunidades abertas.", "q": "", "tm": "21:01"}, {"t": "deal", "p": "díl", "tr": "negócio / venda", "ex": "Time kills all deals.", "exp": "O tempo mata todos os negócios.", "q": "", "tm": "21:37"}, {"t": "response time", "p": "ri-spóns táim", "tr": "tempo de resposta", "ex": "Our response times are better.", "exp": "Nossos tempos de resposta estão melhores.", "q": "", "tm": "25:11"}, {"t": "within 24 hours", "p": "uí-dhin tuén-ti-fór áu-ârs", "tr": "em até 24 horas", "ex": "We need to respond within 24 hours.", "exp": "Precisamos responder em até 24 horas.", "q": "", "tm": "22:58"}, {"t": "owner", "p": "ôu-nâr", "tr": "responsável (dono do processo)", "ex": "Every step has a clear owner.", "exp": "Cada etapa tem um responsável claro.", "q": "", "tm": "22:31"}, {"t": "task force", "p": "tésk fórs", "tr": "força-tarefa", "ex": "We built a task force in July.", "exp": "Criamos uma força-tarefa em julho.", "q": "", "tm": "20:54"}, {"t": "cross-sell", "p": "krós-sél", "tr": "venda cruzada", "ex": "We can cross-sell to our customers.", "exp": "Podemos fazer venda cruzada para nossos clientes.", "q": "", "tm": "23:45"}]}, {"title": "Evento global de clientes", "desc": "Apresentação do evento anual de clientes.", "rows": [{"t": "customer event", "p": "kâs-tâ-mâr i-vént", "tr": "evento para clientes", "ex": "The conference is our global customer event.", "exp": "A conferência é nosso evento global para clientes.", "q": "", "tm": "27:55"}, {"t": "goal", "p": "gôul", "tr": "meta / objetivo", "ex": "What is our goal for this year?", "exp": "Qual é a nossa meta para este ano?", "q": "", "tm": "30:37"}, {"t": "register", "p": "ré-dji-stâr", "tr": "inscrever-se", "ex": "Many customers have registered.", "exp": "Muitos clientes já se inscreveram.", "q": "", "tm": "30:31"}, {"t": "attend", "p": "â-ténd", "tr": "participar / comparecer", "ex": "Many partners will attend.", "exp": "Muitos parceiros vão participar.", "q": "", "tm": "28:30"}, {"t": "keynote", "p": "kí-nôut", "tr": "palestra principal", "ex": "The keynote is on Tuesday.", "exp": "A palestra principal é na terça.", "q": "", "tm": "28:59"}, {"t": "breakout session", "p": "brêik-áut sé-shân", "tr": "sessão paralela (temática)", "ex": "There are many breakout sessions.", "exp": "Há muitas sessões paralelas.", "q": "", "tm": "29:31"}, {"t": "sponsor", "p": "spón-sâr", "tr": "patrocinador", "ex": "Do you know a good sponsor?", "exp": "Você conhece um bom patrocinador?", "q": "", "tm": "31:29"}, {"t": "trending upward", "p": "trén-din âp-uârd", "tr": "em tendência de alta", "ex": "Registrations are trending upward.", "exp": "As inscrições estão em tendência de alta.", "q": "", "tm": "30:56"}, {"t": "wrap up", "p": "rép âp", "tr": "encerrar / concluir", "ex": "Let's wrap up the meeting.", "exp": "Vamos encerrar a reunião.", "q": "", "tm": "31:39"}]}, {"title": "RH: avaliação e feriados", "desc": "Avaliação de fim de ano, pesquisa e folgas.", "rows": [{"t": "year-end", "p": "íâr-énd", "tr": "fim de ano", "ex": "The year-end process starts in December.", "exp": "O processo de fim de ano começa em dezembro.", "q": "", "tm": "32:28"}, {"t": "performance", "p": "pâr-fór-mâns", "tr": "desempenho", "ex": "My manager reviews my performance.", "exp": "Meu gestor avalia meu desempenho.", "q": "", "tm": "33:05"}, {"t": "rating", "p": "rêi-tin", "tr": "nota / classificação", "ex": "The manager prepares your rating.", "exp": "O gestor prepara a sua nota.", "q": "", "tm": "33:05"}, {"t": "manager", "p": "mé-ni-djâr", "tr": "gestor(a)", "ex": "Ask your manager.", "exp": "Pergunte ao seu gestor.", "q": "", "tm": "35:32"}, {"t": "survey", "p": "sâr-vêi", "tr": "pesquisa (questionário)", "ex": "The survey is in February.", "exp": "A pesquisa é em fevereiro.", "q": "", "tm": "35:03"}, {"t": "half day", "p": "réf dêi", "tr": "meio período de folga", "ex": "Can I take a half day on the 24th?", "exp": "Posso tirar meio período no dia 24?", "q": "", "tm": "35:52"}, {"t": "holiday", "p": "ró-li-dêi", "tr": "feriado / férias", "ex": "There is a holiday next week.", "exp": "Há um feriado na semana que vem.", "q": "", "tm": "36:31"}, {"t": "approve", "p": "â-prúv", "tr": "aprovar", "ex": "My manager will approve it.", "exp": "Meu gestor vai aprovar.", "q": "", "tm": "36:04"}, {"t": "report", "p": "ri-pórt", "tr": "relatório", "ex": "Run the report in the HR system.", "exp": "Rode o relatório no sistema de RH.", "q": "", "tm": "36:31"}, {"t": "reach out", "p": "rítch áut", "tr": "entrar em contato", "ex": "Feel free to reach out to me.", "exp": "Fique à vontade para entrar em contato comigo.", "q": "", "tm": "33:54"}]}, {"title": "Segurança e TI", "desc": "Atenção com ataques e chamados de TI.", "rows": [{"t": "be vigilant", "p": "bi ví-dji-lânt", "tr": "fique atento", "ex": "Be vigilant during the holidays.", "exp": "Fique atento durante os feriados.", "q": "", "tm": "39:31"}, {"t": "phishing", "p": "fí-shin", "tr": "golpe por e-mail", "ex": "Report phishing to the security team.", "exp": "Denuncie phishing para a equipe de segurança.", "q": "", "tm": "39:50"}, {"t": "attack", "p": "â-ték", "tr": "ataque", "ex": "We see more attacks in December.", "exp": "Vemos mais ataques em dezembro.", "q": "", "tm": "39:16"}, {"t": "put in a ticket", "p": "put in â tí-kit", "tr": "abrir um chamado", "ex": "Please put in a ticket.", "exp": "Por favor, abra um chamado.", "q": "", "tm": "42:17"}, {"t": "admin rights", "p": "éd-min ráits", "tr": "direitos de administrador", "ex": "I need admin rights.", "exp": "Preciso de direitos de administrador.", "q": "", "tm": "41:48"}, {"t": "compliance", "p": "kâm-plái-âns", "tr": "conformidade", "ex": "Security and compliance are important.", "exp": "Segurança e conformidade são importantes.", "q": "", "tm": "41:18"}, {"t": "risk", "p": "rísk", "tr": "risco", "ex": "This reduces the risk.", "exp": "Isso reduz o risco.", "q": "", "tm": "42:05"}, {"t": "insurance premium", "p": "in-shú-râns prí-mi-âm", "tr": "prêmio de seguro", "ex": "Insurance premiums are higher this year.", "exp": "Os prêmios de seguro estão mais altos este ano.", "q": "", "tm": "41:51"}, {"t": "as quickly as possible", "p": "éz kuík-li éz pó-si-bâl", "tr": "o mais rápido possível", "ex": "Please act as quickly as possible.", "exp": "Por favor, aja o mais rápido possível.", "q": "", "tm": "40:14"}]}, {"title": "Perguntas de finanças", "desc": "Perguntas e respostas: orçamento, custos e investimento.", "rows": [{"t": "close to budget", "p": "klôus tu bâ-djit", "tr": "perto do orçamento", "ex": "Is our revenue close to budget?", "exp": "Nossa receita está perto do orçamento?", "q": "", "tm": "43:48"}, {"t": "revenue stream", "p": "ré-vâ-niu strím", "tr": "fonte de receita", "ex": "We have different revenue streams.", "exp": "Temos diferentes fontes de receita.", "q": "", "tm": "43:44"}, {"t": "maintenance revenue", "p": "mêin-tâ-nâns ré-vâ-niu", "tr": "receita de manutenção", "ex": "We review maintenance revenue every month.", "exp": "Revisamos a receita de manutenção todo mês.", "q": "", "tm": "43:52"}, {"t": "cost control", "p": "kóst kân-trôul", "tr": "controle de custos", "ex": "We are in cost control mode.", "exp": "Estamos em modo de controle de custos.", "q": "", "tm": "47:12"}, {"t": "investment", "p": "in-vést-mânt", "tr": "investimento", "ex": "We need strategic investment.", "exp": "Precisamos de investimento estratégico.", "q": "", "tm": "46:32"}, {"t": "sustainable growth", "p": "sâs-têi-nâ-bâl grôuth", "tr": "crescimento sustentável", "ex": "Our goal is sustainable growth.", "exp": "Nossa meta é crescimento sustentável.", "q": "", "tm": "46:54"}, {"t": "travel expenses", "p": "tré-vâl ik-spén-sis", "tr": "despesas de viagem", "ex": "The travel expenses process is simple now.", "exp": "O processo de despesas de viagem está simples agora.", "q": "", "tm": "45:21"}, {"t": "accountable", "p": "â-káun-tâ-bâl", "tr": "responsável (que presta contas)", "ex": "We need to be accountable.", "exp": "Precisamos prestar contas.", "q": "", "tm": "50:29"}, {"t": "within our control", "p": "uí-dhin áuâr kân-trôul", "tr": "sob nosso controle", "ex": "Some factors are within our control.", "exp": "Alguns fatores estão sob nosso controle.", "q": "", "tm": "48:05"}, {"t": "lean", "p": "lín", "tr": "enxuto", "ex": "Our processes must be lean.", "exp": "Nossos processos devem ser enxutos.", "q": "", "tm": "46:15"}]}, {"title": "Frases de sobrevivência", "desc": "Frases prontas que aparecem em toda reunião.", "rows": [{"t": "Can you hear me?", "p": "kén iú ríâr mi", "tr": "Você está me ouvindo?", "ex": "Can you hear me? — Yes, I can hear you.", "exp": "Você me ouve? — Sim, estou te ouvindo.", "q": "", "tm": ""}, {"t": "You're on mute.", "p": "iór ón miút", "tr": "Você está no mudo.", "ex": "Sorry, I was on mute.", "exp": "Desculpe, eu estava no mudo.", "q": "", "tm": "08:31"}, {"t": "The stage is yours.", "p": "dâ stêidj iz iórs", "tr": "A palavra é sua.", "ex": "Anna, the stage is yours.", "exp": "Anna, a palavra é sua.", "q": "", "tm": "32:32"}, {"t": "Let's move on.", "p": "léts múv ón", "tr": "Vamos para o próximo assunto.", "ex": "Let's move on to the next topic.", "exp": "Vamos para o próximo assunto.", "q": "", "tm": "02:36"}, {"t": "Go ahead.", "p": "gôu â-réd", "tr": "Pode falar. / Vá em frente.", "ex": "Please, go ahead.", "exp": "Por favor, pode falar.", "q": "", "tm": "48:28"}, {"t": "Great question.", "p": "grêit kuést-shân", "tr": "Ótima pergunta.", "ex": "Great question, thank you.", "exp": "Ótima pergunta, obrigado.", "q": "", "tm": "41:32"}, {"t": "put you on the spot", "p": "put iú ón dâ spót", "tr": "te pedir uma resposta na hora", "ex": "Sorry to put you on the spot.", "exp": "Desculpe te pedir uma resposta assim de surpresa.", "q": "", "tm": "48:13"}, {"t": "Stay tuned.", "p": "stêi tiúnd", "tr": "Fique ligado (aguarde novidades).", "ex": "Stay tuned for the FAQ.", "exp": "Aguardem o documento de perguntas frequentes.", "q": "", "tm": "59:12"}, {"t": "Could you repeat that, please?", "p": "kud iú ri-pít dhét plíz", "tr": "Pode repetir, por favor?", "ex": "Sorry, could you repeat that, please?", "exp": "Desculpe, pode repetir, por favor?", "q": "", "tm": ""}, {"t": "Have a great weekend.", "p": "rév â grêit uík-énd", "tr": "Tenha um ótimo fim de semana.", "ex": "Thanks, everyone. Have a great weekend.", "exp": "Obrigado, pessoal. Bom fim de semana.", "q": "", "tm": "59:28"}]}]}, {"id": "merit-2026-session-pub", "title": "Sessão de RH · Mérito", "date": "out/2026", "length": "32 min", "blocks": [{"title": "Abertura da sessão", "desc": "Como uma apresentação de RH começa.", "rows": [{"t": "thank you for attending", "p": "thénk iú fór â-tén-din", "tr": "obrigado por participar", "ex": "Thank you for attending today.", "exp": "Obrigado por participar hoje.", "q": "", "tm": "00:07"}, {"t": "introduce myself", "p": "in-trô-diús mai-sélf", "tr": "me apresentar", "ex": "Let me introduce myself.", "exp": "Deixe eu me apresentar.", "q": "", "tm": "00:16"}, {"t": "background", "p": "bék-gráund", "tr": "histórico / experiência", "ex": "Just to give some background.", "exp": "Só para dar um contexto.", "q": "", "tm": "00:56"}, {"t": "starting point", "p": "stár-din póint", "tr": "ponto de partida", "ex": "This is the starting point.", "exp": "Este é o ponto de partida.", "q": "", "tm": "00:16"}, {"t": "session", "p": "sé-shân", "tr": "sessão / encontro", "ex": "There is another session tonight.", "exp": "Há outra sessão hoje à noite.", "q": "", "tm": "18:38"}, {"t": "go through", "p": "gôu thrú", "tr": "passar por / explicar ponto a ponto", "ex": "We'll go through the process today.", "exp": "Vamos explicar o processo hoje.", "q": "", "tm": "00:37"}, {"t": "outcome", "p": "áut-kâm", "tr": "resultado", "ex": "Your outcome can be explained.", "exp": "Seu resultado pode ser explicado.", "q": "", "tm": "03:22"}, {"t": "in more detail", "p": "in mór dí-teil", "tr": "com mais detalhes", "ex": "We'll talk about it in more detail.", "exp": "Vamos falar disso com mais detalhes.", "q": "", "tm": "02:06"}]}, {"title": "Conceitos de remuneração", "desc": "Salário, mérito, promoção e faixas salariais.", "rows": [{"t": "compensation", "p": "kóm-pen-sêi-shân", "tr": "remuneração", "ex": "Compensation is my area.", "exp": "Remuneração é a minha área.", "q": "", "tm": "01:06"}, {"t": "pay", "p": "pêi", "tr": "salário / pagamento", "ex": "How are we paid?", "exp": "Como somos pagos?", "q": "", "tm": "00:32"}, {"t": "merit increase", "p": "mé-rit ín-kris", "tr": "aumento por mérito", "ex": "I received a merit increase.", "exp": "Recebi um aumento por mérito.", "q": "", "tm": "09:04"}, {"t": "promotion", "p": "prâ-môu-shân", "tr": "promoção", "ex": "A promotion changes your level.", "exp": "Uma promoção muda o seu nível.", "q": "", "tm": "08:06"}, {"t": "pay range", "p": "pêi rêindj", "tr": "faixa salarial", "ex": "Can I see my pay range?", "exp": "Posso ver a minha faixa salarial?", "q": "", "tm": "21:55"}, {"t": "midpoint", "p": "míd-póint", "tr": "ponto médio (da faixa)", "ex": "My salary is below the midpoint.", "exp": "Meu salário está abaixo do ponto médio.", "q": "", "tm": "04:21"}, {"t": "market median", "p": "már-kit mí-di-ân", "tr": "mediana de mercado", "ex": "We pay at the market median.", "exp": "Pagamos na mediana de mercado.", "q": "", "tm": "05:06"}, {"t": "pay grade", "p": "pêi grêid", "tr": "nível salarial (grade)", "ex": "Each role has a pay grade.", "exp": "Cada cargo tem um nível salarial.", "q": "", "tm": "06:14"}, {"t": "job framework", "p": "djób frêim-uârk", "tr": "estrutura de cargos", "ex": "Every role sits on the job framework.", "exp": "Todo cargo está na estrutura de cargos.", "q": "", "tm": "02:11"}, {"t": "level", "p": "lé-vâl", "tr": "nível", "ex": "What level is your role?", "exp": "Qual é o nível do seu cargo?", "q": "", "tm": "23:17"}]}, {"title": "Orçamento e elegibilidade", "desc": "Quem recebe, quanto há de verba e as regras.", "rows": [{"t": "budget", "p": "bâ-djit", "tr": "orçamento / verba", "ex": "There is a separate promotion budget.", "exp": "Há uma verba separada para promoções.", "q": "", "tm": "08:23"}, {"t": "eligible", "p": "é-li-dji-bâl", "tr": "elegível (tem direito)", "ex": "Am I eligible for a merit increase?", "exp": "Eu tenho direito a aumento por mérito?", "q": "", "tm": "09:07"}, {"t": "eligibility", "p": "é-li-dji-bí-li-ti", "tr": "elegibilidade (critérios)", "ex": "Let's talk about eligibility.", "exp": "Vamos falar dos critérios.", "q": "", "tm": "00:41"}, {"t": "guardrails", "p": "gárd-rêils", "tr": "limites / regras de proteção", "ex": "The budget has guardrails.", "exp": "O orçamento tem limites.", "q": "", "tm": "02:35"}, {"t": "affordability", "p": "â-fór-dâ-bí-li-ti", "tr": "capacidade de pagar", "ex": "Affordability is important right now.", "exp": "A capacidade de pagar é importante agora.", "q": "", "tm": "11:40"}, {"t": "cutoff", "p": "kât-óf", "tr": "data de corte", "ex": "There is a cutoff date.", "exp": "Existe uma data de corte.", "q": "", "tm": "10:00"}, {"t": "off-cycle increase", "p": "óf sái-kâl ín-kris", "tr": "aumento fora do ciclo", "ex": "I had an off-cycle increase in May.", "exp": "Tive um aumento fora do ciclo em maio.", "q": "", "tm": "09:41"}, {"t": "one-time payment", "p": "uân táim pêi-mânt", "tr": "pagamento único", "ex": "You will get a one-time payment.", "exp": "Você vai receber um pagamento único.", "q": "", "tm": "14:27"}, {"t": "lump sum", "p": "lâmp sâm", "tr": "valor único (de uma vez)", "ex": "They paid a lump sum.", "exp": "Pagaram um valor único.", "q": "", "tm": "14:27"}, {"t": "in lieu of", "p": "in lú âv", "tr": "em vez de", "ex": "A bonus in lieu of a raise.", "exp": "Um bônus em vez de aumento.", "q": "", "tm": "14:27"}]}, {"title": "Desempenho e aprovação", "desc": "Como a nota vira aumento, e quando entra no salário.", "rows": [{"t": "performance", "p": "pâr-fór-mâns", "tr": "desempenho", "ex": "Performance made a difference.", "exp": "O desempenho fez diferença.", "q": "", "tm": "04:01"}, {"t": "high performer", "p": "rai pâr-fór-mâr", "tr": "pessoa de alto desempenho", "ex": "Money goes to high performers.", "exp": "O dinheiro vai para quem tem alto desempenho.", "q": "", "tm": "13:18"}, {"t": "calibrated", "p": "ké-li-brêi-tid", "tr": "calibrado (revisado em conjunto)", "ex": "My rating was calibrated.", "exp": "Minha nota foi calibrada.", "q": "", "tm": "09:07"}, {"t": "input", "p": "ín-put", "tr": "informação de entrada / opinião", "ex": "Managers gave input.", "exp": "Os gestores deram sua opinião.", "q": "", "tm": "03:54"}, {"t": "sign off", "p": "sáin óf", "tr": "aprovar formalmente", "ex": "The director signed off.", "exp": "O diretor aprovou.", "q": "", "tm": "03:54"}, {"t": "approval", "p": "â-prú-vâl", "tr": "aprovação", "ex": "Finance gave final approval.", "exp": "O financeiro deu a aprovação final.", "q": "", "tm": "16:14"}, {"t": "effective date", "p": "i-fék-tiv dêit", "tr": "data de vigência", "ex": "The effective date is October 1st.", "exp": "A data de vigência é 1º de outubro.", "q": "", "tm": "16:30"}, {"t": "paycheck", "p": "pêi-tchék", "tr": "contracheque / pagamento", "ex": "It will be on your next paycheck.", "exp": "Vai estar no seu próximo pagamento.", "q": "", "tm": "16:30"}, {"t": "backdated", "p": "bék-dêi-tid", "tr": "retroativo", "ex": "The increase is backdated.", "exp": "O aumento é retroativo.", "q": "", "tm": "22:29"}, {"t": "retroactive", "p": "ré-trôu-ék-tiv", "tr": "retroativo", "ex": "Is the payment retroactive?", "exp": "O pagamento é retroativo?", "q": "", "tm": "26:44"}]}, {"title": "Transparência e próximos passos", "desc": "O que vem depois e onde tirar dúvidas.", "rows": [{"t": "transparency", "p": "trens-pé-rân-si", "tr": "transparência", "ex": "Transparency starts somewhere.", "exp": "A transparência começa em algum lugar.", "q": "", "tm": "20:32"}, {"t": "FAQ", "p": "éf ei kiú", "tr": "perguntas frequentes", "ex": "Check the FAQ document.", "exp": "Confira o documento de perguntas frequentes.", "q": "", "tm": "18:53"}, {"t": "recording", "p": "ri-kór-din", "tr": "gravação", "ex": "The recording will be available.", "exp": "A gravação vai ficar disponível.", "q": "", "tm": "18:35"}, {"t": "pay slip", "p": "pêi slip", "tr": "holerite", "ex": "Check your pay slip.", "exp": "Confira o seu holerite.", "q": "", "tm": "19:27"}, {"t": "cost of living", "p": "kóst âv lí-vin", "tr": "custo de vida", "ex": "Is it a cost of living increase?", "exp": "É um reajuste pelo custo de vida?", "q": "", "tm": "25:29"}, {"t": "legislation", "p": "lé-djis-lêi-shân", "tr": "legislação", "ex": "We follow local legislation.", "exp": "Seguimos a legislação local.", "q": "", "tm": "23:34"}, {"t": "reach out", "p": "rítch áut", "tr": "entrar em contato", "ex": "Feel free to reach out to your manager.", "exp": "Fique à vontade para falar com seu gestor.", "q": "", "tm": "19:12"}, {"t": "over the next few weeks", "p": "ôu-vâr dâ nékst fiú uíks", "tr": "nas próximas semanas", "ex": "We'll talk over the next few weeks.", "exp": "Vamos conversar nas próximas semanas.", "q": "", "tm": "19:22"}, {"t": "ongoing", "p": "ón-gôu-in", "tr": "contínuo / em andamento", "ex": "This is an ongoing process.", "exp": "Este é um processo contínuo.", "q": "", "tm": "20:27"}]}, {"title": "Frases de sobrevivência (RH dos EUA)", "desc": "Expressões naturais do inglês americano nesta reunião.", "rows": [{"t": "You're good to go.", "p": "iór gud tu gôu", "tr": "Pode começar. / Está tudo pronto.", "ex": "Okay, you're good to go.", "exp": "Ok, pode começar.", "q": "", "tm": "00:05"}, {"t": "Did I miss anything?", "p": "did ai mis é-ni-thin", "tr": "Esqueci alguma coisa?", "ex": "I think that's it. Did I miss anything?", "exp": "Acho que é isso. Esqueci alguma coisa?", "q": "", "tm": "19:50"}, {"t": "It's a lot to take in.", "p": "its â lót tu têik in", "tr": "É muita informação.", "ex": "I know it's a lot to take in.", "exp": "Eu sei que é muita informação.", "q": "", "tm": "21:41"}, {"t": "There's no pressure.", "p": "dérz nôu pré-shâr", "tr": "Sem pressão.", "ex": "There's no pressure to ask questions.", "exp": "Sem pressão para fazer perguntas.", "q": "", "tm": "21:37"}, {"t": "I'm an open book.", "p": "áim ân ôu-pân buk", "tr": "Pode me perguntar qualquer coisa.", "ex": "Ask me anything. I'm an open book.", "exp": "Pergunte o que quiser. Estou aberto.", "q": "", "tm": "22:11"}, {"t": "Just to confirm", "p": "djâst tu kân-fârm", "tr": "Só para confirmar", "ex": "Just to confirm, the date is the 31st?", "exp": "Só para confirmar, a data é dia 31?", "q": "", "tm": "22:23"}, {"t": "apples-to-apples", "p": "é-pâlz tu é-pâlz", "tr": "comparação justa (igual com igual)", "ex": "We need an apples-to-apples comparison.", "exp": "Precisamos comparar igual com igual.", "q": "", "tm": "05:14"}, {"t": "at the end of the day", "p": "ét dâ énd âv dâ dêi", "tr": "no fim das contas", "ex": "At the end of the day, we want to be fair.", "exp": "No fim das contas, queremos ser justos.", "q": "", "tm": "13:54"}, {"t": "a foundation, not a finish line", "p": "â fáun-dêi-shân nót â fí-nish láin", "tr": "uma base, não a linha de chegada", "ex": "This is a foundation, not a finish line.", "exp": "Isto é uma base, não a linha de chegada.", "q": "", "tm": "04:47"}, {"t": "recreate the wheel", "p": "ri-kri-êit dâ uíl", "tr": "reinventar a roda", "ex": "We don't want to recreate the wheel.", "exp": "Não queremos reinventar a roda.", "q": "", "tm": "31:06"}]}]}];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ico = (n, cls='') => `<svg class="i ${cls}"><use href="#i-${n}"/></svg>`;
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const synth = window.speechSynthesis;
+
+/* ---------- state ---------- */
+const S = Object.assign({reps:7,pause:1.2,rate:0.85,unit:'term',repeat:'off',pt:true,ex:true,echo:true,skip:false,quiz:false,wake:true,ven:'',vpt:'',size:1,panel:'navy'}, store.get('el.set3',{}));
+const saveS = () => store.set('el.set3', S);
+let lib = store.get('el.lib', {});            // id -> meeting {id,title,date,length,blocks,status,added}
+let known = store.get('el.known', {});         // "id|term" -> 1
+const deleted = store.get('el.deleted', []);
+EMBED.forEach((m,i)=>{ if(deleted.includes(m.id)) return; lib[m.id] = {...m, status: lib[m.id]?.status || 'estudando', added: lib[m.id]?.added || (Date.now() - i)}; });
+store.set('el.lib', lib);
+let curId = store.get('el.cur', null); if(!lib[curId] || lib[curId].status==='compreendida') curId = Object.values(lib).find(m=>m.status!=='compreendida')?.id || null;
+let bIdx = store.get('el.block', 0), curRow = 0, token = 0, playing = false, wakeLock = null;
+
+const M = () => lib[curId];
+const B = () => M()?.blocks[bIdx];
+const kkey = (r) => curId + '|' + r.t;
+const pctOf = m => { const all = m.blocks.flatMap(b=>b.rows); return all.length ? Math.round(100*all.filter(r=>known[m.id+'|'+r.t]).length/all.length) : 0; };
+
+/* ---------- voices ---------- */
+let voices = [];
+const URL_SELF = (/^https?:/.test(location.protocol) && !/claude/.test(location.host)) ? location.href : 'https://claude.ai/artifact/UiGhD4fCoEqzwSSmhwaqUz';
+let noVoice = !synth;
+function rankEn(v){ const n=v.name;
+  if(/(Ava|Andrew|Emma|Brian|Aria|Jenny|Guy|Michelle|Steffan).*(Natural|Online)/i.test(n)) return 100;
+  if(/natural|neural|online|premium|enhanced|avançad/i.test(n)) return 85;
+  if(/Google US English/i.test(n)) return 75;
+  if(/Samantha|Ava|Zoe|Evan|Nathan|Allison/i.test(n)) return 65;
+  return /^en[-_]US/i.test(v.lang) ? 40 : 10; }
+function rankPt(v){ const n=v.name;
+  if(/(Francisca|Thalita|Antonio).*(Natural|Online)/i.test(n)) return 100;
+  if(/natural|neural|online|premium|enhanced|avançad/i.test(n)) return 85;
+  if(/Google português do Brasil/i.test(n)) return 75;
+  if(/Luciana|Felipe/i.test(n)) return 65;
+  return /^pt[-_]BR/i.test(v.lang) ? 40 : 10; }
+const nice = n => n.replace(/^Microsoft\s+/,'').replace(/\s+Online\s+\(Natural\)/,' (Natural)').replace(/\s+-\s+.*$/,'');
+function loadVoices(){
+  if(!synth) return; voices = synth.getVoices(); if(!voices.length) return;
+  const en = voices.filter(v=>/^en[-_]US/i.test(v.lang)).sort((a,b)=>rankEn(b)-rankEn(a));
+  const pt = voices.filter(v=>/^pt/i.test(v.lang)).sort((a,b)=>(rankPt(b)+(/BR/i.test(b.lang)?5:0))-(rankPt(a)+(/BR/i.test(a.lang)?5:0)));
+  const opts = (l, sel) => '<option value="">Automática (recomendada)</option>' + l.map(v=>`<option value="${esc(v.name)}"${v.name===sel?' selected':''}>${esc(nice(v.name))}</option>`).join('');
+  $('venv').innerHTML = opts(en, S.ven); $('vptv').innerHTML = opts(pt, S.vpt);
+  const ve = pick('en'), vp = pick('pt');
+  $('vEnName').textContent = ve ? nice(ve.name) : 'Voz padrão do aparelho';
+  $('vPtName').textContent = vp ? nice(vp.name) : 'Voz padrão do aparelho';
+  $('vEnTag').hidden = !(ve && !S.ven); $('vPtTag').hidden = !(vp && !S.vpt);
+}
+function pick(lang){
+  const want = lang==='en' ? S.ven : S.vpt;
+  if(want){ const v = voices.find(x=>x.name===want); if(v) return v; }
+  const l = voices.filter(v=> lang==='en' ? /^en[-_]US/i.test(v.lang) : /^pt/i.test(v.lang));
+  return l.sort((a,b)=> lang==='en' ? rankEn(b)-rankEn(a) : rankPt(b)-rankPt(a))[0] || null;
+}
+if(synth){ loadVoices(); synth.onvoiceschanged = () => { loadVoices(); if(noVoice && voices.length){ noVoice = false; render(); } }; setTimeout(()=>{ if(!synth.getVoices().length && !noVoice){ noVoice = true; render(); } }, 2500); }
+
+/* ---------- stage helpers ---------- */
+const stage = () => $('stage');
+function fitTerm(){
+  const el = $('term'), box = $('termbox'); if(!el || !box) return;
+  const W = box.clientWidth; if(!W) return;
+  let size = Math.min(84, Math.max(34, W/4.2));
+  const cs = getComputedStyle(el), ctx = (fitTerm.c ||= document.createElement('canvas').getContext('2d'));
+  const words = el.textContent.split(/\s+/).filter(Boolean);
+  const widest = sz => { ctx.font = `${cs.fontWeight} ${sz}px ${cs.fontFamily}`; return Math.max(0, ...words.map(w => ctx.measureText(w).width - 0.035*sz*w.length)); };
+  while(size > 26 && widest(size) > W - 4) size -= 2;
+  el.style.fontSize = size + 'px';
+}
+let fitRO = null;
+function setPhase(p){ document.querySelectorAll('.ph').forEach(x=>x.classList.toggle('on', x.dataset.p===p)); }
+function setMeter(n, total){
+  const m = $('meter'); if(!m) return;
+  if(m.children.length !== total) m.innerHTML = Array.from({length:total},()=>'<span></span>').join('');
+  [...m.children].forEach((s,i)=>{ s.className = i < n-1 ? 'done' : (i === n-1 ? 'cur' : ''); });
+}
+function wordsHTML(t){ return t.split(/(\s+)/).map(w=> /\s+/.test(w) ? w : `<span class="w">${esc(w)}</span>`).join(''); }
+function showRow(r, i){
+  if(!stage() || !r) return;
+  $('term').textContent = r.t; $('pron').innerHTML = ico('volume','s') + esc(r.p);
+  $('lnTr').textContent = r.tr; $('lnEx').innerHTML = wordsHTML(r.ex); $('lnExp').innerHTML = wordsHTML(r.exp);
+  ['lnTr','lnEx','lnExp'].forEach(id=>$(id).classList.remove('on'));
+  $('lnTr').classList.toggle('hide', S.quiz); $('lnExp').classList.toggle('hide', S.quiz);
+  $('stPos').textContent = `Linha ${i+1} de ${B().rows.length}`;
+  fitTerm();
+}
+function pulse(){ const t=$('term'); t.classList.remove('pulse'); void t.offsetWidth; t.classList.add('pulse'); }
+function setLive(on){
+  playing = on; stage()?.classList.toggle('live', on);
+  $('play').classList.toggle('live', on);
+  $('play').innerHTML = ico(on ? 'pause' : 'play'); $('play').setAttribute('aria-label', on ? 'Pausar' : 'Tocar');
+  $('stState').textContent = on ? 'Tocando' : 'Pausado';
+  if(!on){ stage()?.classList.remove('speaking','yourturn'); setPhase(''); }
+  wake(on);
+}
+async function wake(on){
+  try{ if(on && S.wake && 'wakeLock' in navigator && !wakeLock){ wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>wakeLock=null); }
+       else if(!on && wakeLock){ await wakeLock.release(); wakeLock = null; } }catch(e){}
+}
+
+/* ---------- speech engine ---------- */
+function speak(text, lang, t, lineEl){
+  return new Promise(res=>{
+    if(!synth || t!==token) return res();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang === 'en' ? 'en-US' : 'pt-BR'; u.rate = S.rate;
+    const v = pick(lang); if(v) u.voice = v;
+    const words = lineEl ? [...lineEl.querySelectorAll('.w')] : [];
+    let timer = null, gotBoundary = false;
+    const hl = i => words.forEach((w,j)=>{ w.classList.toggle('hl', j===i); w.classList.toggle('past', j<i); });
+    u.onstart = () => {
+      stage()?.classList.add('speaking');
+      if(words.length){ let i = 0; hl(0); const per = 60000 / (150 * S.rate);
+        timer = setInterval(()=>{ if(gotBoundary) return clearInterval(timer); i++; if(i < words.length) hl(i); else clearInterval(timer); }, per); }
+    };
+    u.onboundary = e => { if(!words.length || e.name && e.name!=='word') return; gotBoundary = true;
+      const idx = text.slice(0, e.charIndex).split(/\s+/).filter(Boolean).length; hl(Math.min(idx, words.length-1)); };
+    const done = () => { clearInterval(timer); if(words.length) words.forEach(w=>{w.classList.remove('hl');w.classList.add('past');}); stage()?.classList.remove('speaking'); res(); };
+    u.onend = done; u.onerror = done;
+    synth.speak(u);
+    // Safari/Chrome watchdog
+    setTimeout(()=>{ if(t===token && !synth.speaking && !synth.pending) done(); }, 400 + text.length * 180 / S.rate);
+  });
+}
+const wait = (s,t) => new Promise(r=> t===token ? setTimeout(r, s*1000) : r());
+async function yourTurn(text, t){
+  if(!S.echo || t!==token) return wait(S.pause, t);
+  const d = Math.max(1.6, (text.split(/\s+/).length * 0.55 + 0.9) / S.rate);
+  const st = stage(); st.style.setProperty('--d', d+'s'); st.classList.remove('yourturn'); void st.offsetWidth; st.classList.add('yourturn');
+  const prev = document.querySelector('.ph.on')?.dataset.p; setPhase('you');
+  await wait(d, t); st.classList.remove('yourturn'); if(prev) setPhase(prev);
+}
+async function playRow(i, t){
+  const r = B().rows[i]; if(!r) return;
+  curRow = i; markRow(i); showRow(r, i);
+  const unitRow = S.unit === 'row', N = S.reps;
+  const termTimes = unitRow ? 1 : N, rowTimes = unitRow ? N : 1;
+  for(let k=0;k<rowTimes;k++){
+    if(t!==token) return;
+    ['lnTr','lnEx','lnExp'].forEach(id=>$(id).classList.remove('on'));
+    $('lnEx').innerHTML = wordsHTML(r.ex); $('lnExp').innerHTML = wordsHTML(r.exp);
+    setPhase('term');
+    for(let n=0;n<termTimes;n++){
+      if(t!==token) return;
+      setMeter(unitRow ? k+1 : n+1, N); pulse();
+      await speak(r.t, 'en', t);
+      await yourTurn(r.t, t);
+    }
+    if(S.pt){ setPhase('tr'); $('lnTr').classList.add('on'); await speak(r.tr, 'pt', t); await wait(S.pause*0.7, t); }
+    if(S.ex){
+      setPhase('ex'); $('lnEx').classList.add('on'); await speak(r.ex, 'en', t, $('lnEx'));
+      await yourTurn(r.ex, t);
+      if(S.pt){ $('lnExp').classList.add('on'); await speak(r.exp, 'pt', t, $('lnExp')); await wait(S.pause*0.7, t); }
+    }
+  }
+}
+async function playFrom(i){
+  const t = ++token; if(synth) synth.cancel();
+  setLive(true);
+  const rows = B().rows;
+  while(t===token){
+    if(S.repeat === 'one'){ await playRow(i, t); await wait(0.8, t); continue; }
+    let played = false;
+    for(let j=i;j<rows.length && t===token;j++){
+      if(S.skip && known[kkey(rows[j])] && j!==i) continue;
+      await playRow(j, t); played = true; await wait(1, t);
+      if(S.repeat === 'one'){ i = j; break; }
+    }
+    if(S.repeat === 'one') continue;
+    if(S.repeat === 'block' && t===token && played){ i = 0; continue; }
+    break;
+  }
+  if(t===token){ setLive(false); }
+}
+function pause(){ token++; if(synth) synth.cancel(); setLive(false); }
+
+/* ---------- render ---------- */
+function ringSVG(p){ const c = 2*Math.PI*12; return `<svg class="pr" viewBox="0 0 30 30"><circle class="bgc" cx="15" cy="15" r="12"/><circle class="fg" cx="15" cy="15" r="12" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p)}"/></svg>`; }
+function render(){
+  document.body.appendChild($('transport'));
+  const m = M();
+  if(!m){
+    $('mtitle').textContent = 'Treino de Reunião'; $('mmeta').textContent = 'English Lab';
+    $('transport').hidden = true;
+    $('main').innerHTML = `<div class="empty"><div class="logo">${ico('headphones')}</div><h3>Nenhuma reunião para estudar</h3>
+      <p>Importe o arquivo .json da reunião (salvo na pasta INGLÊS › Reuniões do seu OneDrive). Ele fica guardado neste aparelho.</p>
+      <label class="btn dark" style="position:relative">${ico('upload','s')}Importar reunião<input type="file" multiple data-import style="position:absolute;inset:0;opacity:0;cursor:pointer"></label></div>`;
+    return;
+  }
+  if(bIdx >= m.blocks.length) bIdx = 0;
+  const total = m.blocks.reduce((a,b)=>a+b.rows.length,0);
+  $('mtitle').textContent = m.title; $('mmeta').textContent = `${m.date} · ${total} termos · ${pctOf(m)}%`;
+  $('transport').hidden = false;
+  $('main').innerHTML = `
+  ${noVoice ? `<div class="novoice" role="alert"><b>Sem som nesta tela</b>Este visualizador não tem voz. Abra a página no Chrome:
+    <ol><li>Toque nos <b style="display:inline;font-size:inherit">⋮</b> (três pontinhos) no topo.</li><li>Escolha <b style="display:inline;font-size:inherit">Abrir no navegador</b>.</li></ol>
+    Se não aparecer essa opção, copie o link e cole no Chrome:
+    <div class="lk">${URL_SELF}</div><button class="btn" id="copyLink">${ico('copy','s')}Copiar link</button></div>` : ''}
+  <div class="layout">
+    <div class="left">
+      <section class="stage" id="stage" aria-live="polite">
+        <div class="st-head"><span class="onair"><i></i><span id="stState">Pronto</span></span><span id="stBlock">${esc(B().title)}</span><span class="st-pos" id="stPos"></span></div>
+        <div class="phases"><span class="ph" data-p="term">Termo</span><span class="ph" data-p="tr">Tradução</span><span class="ph" data-p="ex">Frase</span><span class="ph yv" data-p="you">Sua vez</span></div>
+        <div class="termbox" id="termbox"><div class="term" id="term"></div></div>
+        <div class="pron" id="pron"></div>
+        <div class="meter" id="meter"></div>
+        <div class="lines"><div class="ln" id="lnTr"></div><div class="ln" id="lnEx"></div><div class="ln pt" id="lnExp"></div></div>
+        <div class="st-foot">
+          <div class="wave"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+          <div class="you"><div class="mic">${ico('mic')}</div>Repita em voz alta<svg class="ring" viewBox="0 0 26 26"><circle class="bgc" cx="13" cy="13" r="11"/><circle class="fg" cx="13" cy="13" r="11"/></svg></div>
+          <span class="hint" id="hint">${S.unit==='row'?'Linha':'Termo'} ×${S.reps}${S.echo?' · eco':''}</span>
+        </div>
+      </section>
+    </div>
+    <div class="right">
+      <div id="blocknav"></div>
+      <div class="list ${S.quiz?'quiz':''}" id="list">${B().rows.map((r,i)=>`
+        <article class="row ${known[kkey(r)]?'known':''}" data-i="${i}">
+          <div class="rmain">
+            <span class="num">${i+1}</span>
+            <div class="rtxt" data-open="${i}"><b>${esc(r.t)}</b><span class="pt">${esc(r.tr)}</span><em>${esc(r.p)}</em></div>
+            <button class="rb k" data-known="${i}" aria-pressed="${!!known[kkey(r)]}" aria-label="Já sei">${ico('check')}</button>
+            <button class="rb" data-play="${i}" aria-label="Tocar a partir da linha ${i+1}">${ico('play')}</button>
+          </div>
+          <div class="rmore">
+            <div class="ex"><b>${esc(r.ex)}</b><div class="pt">${esc(r.exp)}</div></div>
+            ${r.q ? `<div class="quote"><span class="tm">${ico('clock','s')}${esc(r.tm)}</span>“${esc(r.q)}”</div>` : r.tm ? `<div class="quote"><span class="tm">${ico('clock','s')}${esc(r.tm)}</span>aparece neste minuto da gravação</div>` : '<div class="quote">Frase extra, útil em qualquer reunião.</div>'}
+          </div>
+        </article>`).join('')}</div>
+    </div>
+  </div>`;
+  if(matchMedia('(min-width:960px)').matches) $('stage').after($('transport'));
+  fitRO?.disconnect(); fitRO = new ResizeObserver(fitTerm); fitRO.observe($('termbox'));
+  setMeter(0, S.reps); showRow(B().rows[curRow] || B().rows[0], Math.min(curRow, B().rows.length-1)); markRow(curRow);
+  setLive(playing);
+  renderBlockNav();
+}
+function renderBlockNav(){
+  const m = M(), b = B(), el = $('blocknav'); if(!el) return;
+  const k = b.rows.filter(r=>known[kkey(r)]).length, p = Math.round(100*k/b.rows.length);
+  el.innerHTML = `<section class="topic" aria-label="Tema atual">
+    <div class="tp-top"><span>Tema ${bIdx+1} de ${m.blocks.length}</span><span>${k} de ${b.rows.length} aprendidos</span></div>
+    <div class="tp-title">${esc(b.title)}</div>
+    ${b.desc ? `<p class="tp-desc">${esc(b.desc)}</p>` : ''}
+    <div class="tp-bar" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div>
+    <div class="tp-actions">
+      <button class="tp-btn" data-bnav="-1" ${bIdx===0?'disabled':''} aria-label="Tema anterior">${ico('prev')}Anterior</button>
+      <button class="tp-btn main" id="bnOpen">${ico('library')}Ver temas</button>
+      <button class="tp-btn" data-bnav="1" ${bIdx===m.blocks.length-1?'disabled':''} aria-label="Próximo tema">Próximo${ico('next')}</button>
+    </div></section>`;
+}
+function renderBlkList(){
+  const m = M(); if(!m) return;
+  $('blkSub').textContent = m.title + ' · ' + m.date;
+  $('blkList').innerHTML = m.blocks.map((b,i)=>{ const k=b.rows.filter(r=>known[m.id+'|'+r.t]).length, p=Math.round(100*k/b.rows.length), cur=i===bIdx, done=k===b.rows.length;
+    return `<button class="blk ${done?'bk-done':''}" data-goto="${i}" aria-current="${cur}">
+      <span class="bk-n">${done ? ico('check','s') : i+1}</span>
+      <span class="bk-t"><b>${esc(b.title)}</b><small>${k} de ${b.rows.length} aprendidos</small><span class="bk-bar"><i style="width:${p}%"></i></span></span>
+      ${cur ? '<span class="bk-now">Agora</span>' : ''}</button>`; }).join('');
+}
+function goBlock(i){ pause(); bIdx = i; curRow = 0; store.set('el.block', bIdx); render(); window.scrollTo({top:0}); }
+function markRow(i){
+  document.querySelectorAll('.row').forEach(r=>r.classList.toggle('cur', +r.dataset.i===i));
+  const el = document.querySelector(`.row[data-i="${i}"]`);
+  if(el && playing){ const rc = el.getBoundingClientRect(); if(rc.top < 70 || rc.bottom > innerHeight - 100) el.scrollIntoView({block:'center', behavior:'smooth'}); }
+}
+function renderLib(){
+  const ms = Object.values(lib).sort((a,b)=> (a.status==='compreendida') - (b.status==='compreendida') || b.added - a.added);
+  $('libList').innerHTML = ms.length ? ms.map(m=>{ const p = pctOf(m);
+    const st = m.status==='compreendida' ? ['done','Compreendida'] : p>=80 ? ['ready','Pronta para assistir'] : ['','Estudando'];
+    return `<div class="mt ${m.id===curId?'active':''}">
+      <div class="mt-h"><div class="ttx"><b>${esc(m.title)}</b><small>${esc(m.date)} · ${esc(m.length||'')}</small></div><span class="pill ${st[0]}">${st[1]}</span></div>
+      <div class="bar"><i style="width:${p}%"></i></div>
+      <div class="tools">
+        ${m.status==='compreendida'
+          ? `<button class="btn sm" data-act="reopen" data-id="${esc(m.id)}">${ico('undo','s')}Voltar a estudar</button>`
+          : `<button class="btn sm ${m.id===curId?'':'dark'}" data-act="open" data-id="${esc(m.id)}">${ico('play','s')}${m.id===curId?'Aberta':'Estudar'}</button>
+             <button class="btn sm" data-act="done" data-id="${esc(m.id)}">${ico('archive','s')}Compreendida</button>`}
+        <button class="btn sm danger" data-act="ask" data-id="${esc(m.id)}">${ico('trash','s')}Remover</button>
+      </div>
+      <div class="confirm" data-confirm="${esc(m.id)}">Remover deste aparelho? <button class="btn sm danger" data-act="del" data-id="${esc(m.id)}">Remover</button><button class="btn sm" data-act="cancel">Cancelar</button></div>
+    </div>`; }).join('') : '<p class="tip">Nenhuma reunião ainda.</p>';
+}
+function toast(msg){ const t=$('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('on'), 2200); }
+const saveLib = () => store.set('el.lib', lib);
+
+/* ---------- sheets & settings ---------- */
+function openSheet(id){ $(id).classList.add('open'); $('scrim').classList.add('open'); if(id==='libSheet') renderLib(); if(id==='blkSheet') renderBlkList(); if(id==='setSheet') syncSet(); }
+function closeSheets(){ document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open')); $('scrim').classList.remove('open'); }
+function syncSet(){
+  $('oreps').textContent = S.reps; $('opause').textContent = S.pause.toFixed(1)+'s';
+  document.querySelectorAll('#unitSeg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===S.unit));
+  document.querySelectorAll('#panelSeg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===S.panel));
+  document.querySelectorAll('#repSeg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===S.repeat));
+  for(const [id,k] of [['optPt','pt'],['optEx','ex'],['optEcho','echo'],['optSkip','skip'],['optQuiz','quiz'],['optWake','wake']]) $(id).checked = S[k];
+  loadVoices(); syncTransport();
+}
+function syncTransport(){
+  $('speedBtn').textContent = S.rate.toFixed(2).replace(/0$/,'') + '×';
+  $('repeatBtn').classList.toggle('on', S.repeat !== 'off'); $('repBadge').hidden = S.repeat !== 'one';
+  $('repeatBtn').setAttribute('aria-label', {off:'Repetição desligada',block:'Repetindo o bloco',one:'Repetindo a linha'}[S.repeat]);
+  const h = $('hint'); if(h) h.textContent = `${S.unit==='row'?'Linha':'Termo'} ×${S.reps}${S.echo?' · eco':''}`;
+}
+$('openSet').onclick = () => openSheet('setSheet');
+$('openLib').onclick = () => openSheet('libSheet');
+$('blkList').onclick = e => { const b = e.target.closest('[data-goto]'); if(!b) return; closeSheets(); goBlock(+b.dataset.goto); };
+const SIZES = [1,1.2,1.4,1.6];
+function applyView(){ document.body.style.setProperty('--z', 1); document.documentElement.classList.toggle('hc', S.panel!=='soft'); document.documentElement.dataset.panel = S.panel;
+  document.querySelector('meta[name=theme-color]').content = S.panel==='soft' ? '#0f1216' : '#e6ebf1'; requestAnimationFrame(fitTerm); }
+$('panelSeg').onclick = e => { const b=e.target.closest('button'); if(!b) return; S.panel=b.dataset.v; saveS(); applyView(); syncSet(); };
+
+$('scrim').onclick = closeSheets;
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick = closeSheets);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSheets(); });
+$('unitSeg').onclick = e => { const b=e.target.closest('button'); if(!b) return; S.unit=b.dataset.v; saveS(); syncSet(); };
+$('repSeg').onclick = e => { const b=e.target.closest('button'); if(!b) return; S.repeat=b.dataset.v; saveS(); syncSet(); };
+document.querySelectorAll('[data-step]').forEach(b=>b.onclick = () => {
+  const k=b.dataset.step, d=+b.dataset.d;
+  if(k==='reps') S.reps = Math.min(10, Math.max(1, S.reps + d));
+  else S.pause = Math.round(Math.min(3, Math.max(0.4, S.pause + d))*10)/10;
+  saveS(); syncSet(); if(stage()) setMeter(0, S.reps);
+});
+for(const [id,k] of [['optPt','pt'],['optEx','ex'],['optEcho','echo'],['optSkip','skip'],['optQuiz','quiz'],['optWake','wake']])
+  $(id).onchange = () => { S[k] = $(id).checked; saveS(); syncTransport(); if(k==='quiz'){ $('list')?.classList.toggle('quiz', S.quiz); $('lnTr')?.classList.toggle('hide',S.quiz); $('lnExp')?.classList.toggle('hide',S.quiz); } };
+$('venv').onchange = e => { S.ven = e.target.value; saveS(); loadVoices(); };
+$('vptv').onchange = e => { S.vpt = e.target.value; saveS(); loadVoices(); };
+$('testEn').onclick = () => { pause(); const t=++token; speak('Hello everyone, can you hear me?', 'en', t); };
+$('testPt').onclick = () => { pause(); const t=++token; speak('Olá! Esta é a voz em português.', 'pt', t); };
+
+/* ---------- transport ---------- */
+$('play').onclick = () => { if(noVoice){ toast('Sem voz aqui: abra no Chrome'); window.scrollTo({top:0,behavior:'smooth'}); return; } playing ? pause() : playFrom(curRow); };
+$('next').onclick = () => { const n = Math.min(curRow+1, B().rows.length-1); playing ? playFrom(n) : (curRow=n, showRow(B().rows[n], n), markRow(n)); };
+$('prev').onclick = () => { const n = Math.max(curRow-1, 0); playing ? playFrom(n) : (curRow=n, showRow(B().rows[n], n), markRow(n)); };
+$('repeatBtn').onclick = () => { S.repeat = {off:'block',block:'one',one:'off'}[S.repeat]; saveS(); syncTransport();
+  toast({off:'Repetição desligada: para no fim do bloco',block:'Repetir o bloco inteiro',one:'Repetir esta linha sem parar'}[S.repeat]); };
+const RATES = [0.6,0.7,0.8,0.85,0.9,1,1.1];
+$('speedBtn').onclick = () => { const i = RATES.indexOf(S.rate); S.rate = RATES[(i+1) % RATES.length]; saveS(); syncTransport(); toast(`Velocidade ${S.rate}×`); };
+
+/* ---------- main list events ---------- */
+$('main').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if(b?.dataset.bnav){ goBlock(Math.min(M().blocks.length-1, Math.max(0, bIdx + +b.dataset.bnav))); return; }
+  if(b?.id === 'bnOpen'){ openSheet('blkSheet'); return; }
+  if(b?.dataset.play){ playFrom(+b.dataset.play); return; }
+  if(b?.dataset.known){ const r = B().rows[+b.dataset.known], k = kkey(r);
+    if(known[k]) delete known[k]; else known[k] = 1; store.set('el.known', known);
+    b.setAttribute('aria-pressed', !!known[k]); b.closest('.row').classList.toggle('known', !!known[k]);
+    const m = M(), i = bIdx, kn = B().rows.filter(x=>known[kkey(x)]).length;
+    renderBlockNav();
+    $('mmeta').textContent = `${m.date} · ${m.blocks.reduce((a,x)=>a+x.rows.length,0)} termos · ${pctOf(m)}%`;
+    if(pctOf(m) >= 80 && known[k]) toast('80% aprendido: pronta para assistir a reunião inteira!');
+    return; }
+  if(b?.id === 'copyLink'){ navigator.clipboard?.writeText(URL_SELF).then(()=>toast('Link copiado. Cole no Chrome.'), ()=>toast('Segure o dedo sobre o link para copiar')); return; }
+  if(b?.id === 'copyBtn'){ const txt = B().title + '\n\n' + B().rows.map((r,i)=>`${i+1}. ,...., ` + Array(S.reps).fill(r.t).join(' ,...., ') + ` ,....,\n   ${r.tr}\n   ${r.ex}\n   ${r.exp}`).join('\n\n');
+    navigator.clipboard?.writeText(txt).then(()=>toast('Bloco copiado para o modo de voz'), ()=>toast('Não foi possível copiar aqui')); return; }
+  const pt = e.target.closest('.quiz .pt'); if(pt){ pt.classList.toggle('show'); return; }
+  const op = e.target.closest('[data-open]'); if(op){ op.closest('.row').classList.toggle('open'); return; }
+});
+$('main').addEventListener('change', e => { if(e.target.matches('[data-import]')) importFiles(e.target.files); });
+
+/* ---------- library ---------- */
+function addMeetings(d){ if(!Array.isArray(d)) d = [d]; let n = 0;
+  for(const m of d){ if(!m || !m.id || !Array.isArray(m.blocks)) continue; lib[m.id] = {...m, status: lib[m.id]?.status || 'estudando', added: lib[m.id]?.added || Date.now()}; n++; curId = m.id;
+    const di = deleted.indexOf(m.id); if(di>=0){ deleted.splice(di,1); store.set('el.deleted', deleted); } }
+  return n; }
+function afterImport(n){ if(n){ saveLib(); store.set('el.cur', curId); bIdx = 0; curRow = 0; render(); renderLib(); closeSheets(); toast(n===1 ? 'Reunião importada' : n + ' reuniões importadas'); } else toast('Nenhuma reunião encontrada nesse conteúdo'); }
+$('pasteBtn').onclick = () => { try{ afterImport(addMeetings(JSON.parse($('pasteBox').value.trim()))); $('pasteBox').value=''; }catch(e){ toast('Conteúdo inválido: copie o arquivo inteiro'); } };
+async function importFiles(files){
+  let n = 0;
+  for(const f of files){ try{ let d = JSON.parse(await f.text()); if(!Array.isArray(d)) d = [d];
+      for(const m of d){ if(!m.id || !Array.isArray(m.blocks)) continue; lib[m.id] = {...m, status: lib[m.id]?.status || 'estudando', added: lib[m.id]?.added || Date.now()}; n++; curId = m.id;
+        const di = deleted.indexOf(m.id); if(di>=0){ deleted.splice(di,1); store.set('el.deleted', deleted); } } }
+    catch(err){ toast('Arquivo inválido: ' + f.name); } }
+  if(n){ saveLib(); store.set('el.cur', curId); bIdx = 0; curRow = 0; render(); renderLib(); toast(n===1 ? 'Reunião importada' : n + ' reuniões importadas'); }
+}
+$('file').onchange = e => importFiles(e.target.files);
+$('libList').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return; const id = b.dataset.id, a = b.dataset.act;
+  if(a==='open'){ pause(); curId = id; store.set('el.cur', id); bIdx = 0; curRow = 0; render(); renderLib(); closeSheets(); }
+  if(a==='done'){ lib[id].status = 'compreendida'; saveLib(); if(id===curId){ pause(); curId = Object.values(lib).find(m=>m.status!=='compreendida')?.id || null; bIdx=0; curRow=0; render(); } renderLib(); toast('Reunião arquivada como compreendida'); }
+  if(a==='reopen'){ lib[id].status = 'estudando'; saveLib(); renderLib(); }
+  if(a==='ask'){ document.querySelectorAll('.confirm').forEach(c=>c.classList.toggle('open', c.dataset.confirm===id)); }
+  if(a==='cancel'){ document.querySelectorAll('.confirm').forEach(c=>c.classList.remove('open')); }
+  if(a==='del'){ delete lib[id]; saveLib(); if(!deleted.includes(id)){ deleted.push(id); store.set('el.deleted', deleted); }
+    if(id===curId){ pause(); curId = Object.values(lib).find(m=>m.status!=='compreendida')?.id || null; bIdx=0; curRow=0; render(); } renderLib(); toast('Reunião removida deste aparelho'); }
+};
+
+document.addEventListener('keydown', e => {
+  if(e.target.matches('input,select,textarea') || document.querySelector('.sheet.open')) return;
+  if(e.key===' '){ e.preventDefault(); $('play').click(); }
+  if(e.key==='ArrowRight') $('next').click();
+  if(e.key==='ArrowLeft') $('prev').click();
+});
+matchMedia('(min-width:960px)').addEventListener('change', () => { if(M()) { if(matchMedia('(min-width:960px)').matches) $('stage').after($('transport')); else document.body.appendChild($('transport')); } });
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible' && playing && S.wake) wake(true); });
+
+if(curId) store.set('el.cur', curId);
+applyView(); syncTransport(); render();
+if('serviceWorker' in navigator && /^https:/.test(location.protocol) && !/claude/.test(location.host)){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+}
+</script>
+</body>
+</html>

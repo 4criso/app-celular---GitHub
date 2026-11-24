@@ -373,6 +373,9 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
 .pc-grid b{display:block;font-size:24px;color:var(--panel,#173a5e)}.pc-grid span{font-size:13.5px;color:var(--ink2)}
 .pc-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.pc-act .btn{justify-content:center;min-height:46px}
 #progSum{margin-bottom:16px}
+.danger-zone{border-color:#f3b4b4;background:#fff6f6}
+.danger-zone .btn.danger{width:100%;justify-content:center;min-height:48px;background:#fde7e7;border-color:#f3b4b4;color:#b42318}
+#wipeYes{background:#b42318;border-color:#b42318;color:#fff}
 </style>
 </head>
 <body>
@@ -460,6 +463,15 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
       <label class="tip" for="vptv">Português</label><select id="vptv"></select>
       <p class="tip">A voz recomendada é escolhida sozinha: a mais natural que o seu aparelho tem. No iPhone, se soar robótica: Ajustes › Acessibilidade › Conteúdo Falado › Vozes › Inglês, e baixe uma voz "Premium" ou "Avançada".</p>
     </details>
+  </div>
+  <div class="grp danger-zone">
+    <h4>Começar do zero</h4>
+    <p class="tip">Apaga deste aparelho os termos aprendidos, a revisão, os testes e o andamento das reuniões. Seus ajustes de voz e cor continuam.</p>
+    <button class="btn danger" id="wipeAsk"><svg class="i s"><use href="#i-trash"/></svg>Apagar meus dados</button>
+    <div class="m-confirm" id="wipeBox" style="margin:10px 0 4px">
+      <span style="width:100%">Tem certeza? Não dá para desfazer. Se quiser guardar, use antes <b>Progresso › Copiar</b>.</span>
+      <button class="btn sm danger" id="wipeYes">Sim, apagar tudo</button><button class="btn sm" id="wipeNo">Cancelar</button>
+    </div>
   </div>
 </aside>
 
@@ -1013,6 +1025,13 @@ $('qzBody').addEventListener('click', e => {
   else if(b.id === 'qzRetry'){ const errs = Q.errs; Q = {mode: Q.mode, qs: shuffle(errs.map(q => ({...q, opts: shuffle([...q.opts])}))), i: 0, ok: 0, errs: [], answered: false}; drawQ(); setTimeout(playQ, 250); }
   else if(b.hasAttribute('data-close-quiz')) closeSheets();
 });
+/* ---------- start over: wipe progress on this device (keeps voice/colour settings) ---------- */
+$('wipeAsk').onclick = () => $('wipeBox').classList.add('open');
+$('wipeNo').onclick = () => $('wipeBox').classList.remove('open');
+$('wipeYes').onclick = () => {
+  try{ for(const k of Object.keys(localStorage)) if(k.startsWith('el.') && k !== 'el.set3') localStorage.removeItem(k); }catch(e){}
+  pause(); toast('Dados apagados. Começando do zero…'); setTimeout(() => { location.hash = ''; location.reload(); }, 900);
+};
 $('testPt').onclick = () => { pause(); const t=++token; speak('Olá! Esta é a voz em português.', 'pt', t); };
 
 /* ---------- transport ---------- */

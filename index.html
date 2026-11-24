@@ -185,7 +185,38 @@ svg.i.s{width:16px;height:16px}
 .blk[aria-current=true] .bk-n{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .bk-now{font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px;background:var(--ink);color:var(--surface);flex:none}
 .bk-done .bk-n{background:var(--ok);border-color:var(--ok);color:#fff}
-/* rows */
+/* meetings drawer */
+.lib-h{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--ink2);margin:18px 0 10px}
+.lib-h::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--ok)}
+.lib-h.done::before{background:#7c8ea3}
+.lib-h:first-child{margin-top:0}
+.mcard{border-radius:18px;background:var(--surface);margin-bottom:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 4px 14px rgba(16,35,58,.10);transition:transform .15s,box-shadow .15s}
+.mcard:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(16,35,58,.16)}
+.mcard.cur{box-shadow:0 0 0 3px #ffd400,0 8px 22px rgba(16,35,58,.16)}
+.m-head{width:100%;display:block;text-align:left;border:0;cursor:pointer;padding:16px 16px 14px;background:linear-gradient(135deg,var(--panel,#173a5e) 0%,color-mix(in srgb,var(--panel,#173a5e) 78%,#3a7bd5) 100%);color:#fff}
+.mcard.fin .m-head{background:linear-gradient(135deg,#5b6b7d,#7c8ea3)}
+.m-top{display:flex;align-items:flex-start;gap:10px}
+.m-top b{flex:1;font-size:18px;line-height:1.25}
+.m-meta{display:block;font-size:14px;color:#d3dfeb;margin-top:4px}
+.tag{font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap;flex:none}
+.tag.now{background:#ffd400;color:#10233a}
+.tag.ready{background:#d9f7e4;color:#0b6b31}
+.m-body{padding:14px 16px 4px}
+.m-prog{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--ink2)}
+.m-prog .bk-bar{flex:1;height:10px;border-radius:5px}
+.m-act{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:12px 10px 14px}
+.ma{min-height:46px;border-radius:12px;border:0;padding:0 6px;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13.5px;font-weight:700;cursor:pointer;transition:filter .15s,transform .12s}
+.ma:hover{filter:brightness(1.06)}.ma:active{transform:scale(.96)}
+.ma.go{background:var(--panel,#173a5e);color:#fff}
+.ma.go.on{background:#ffd400;color:#10233a}
+.ma.ok{background:#dcf5e6;color:#0b6b31}
+.ma.del{background:#fde7e7;color:#b42318}
+.m-confirm{display:none;align-items:center;gap:8px;flex-wrap:wrap;margin:0 12px 14px;padding:10px 12px;border-radius:12px;background:#fde7e7;color:#7a1a12;font-size:14px;font-weight:600}
+.m-confirm.open{display:flex}
+@media(max-width:380px){.m-act{grid-template-columns:1fr 1fr}.ma.go{grid-column:1/-1}}
+.addm{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+.addm summary{gap:8px;font-size:14px}
+
 .list{display:grid;gap:8px}
 .row{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);transition:border-color .2s,box-shadow .2s,transform .2s;overflow:hidden}
 .row:hover{border-color:var(--line2)}
@@ -266,7 +297,7 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
 .mt-h .ttx{flex:1}
 .mt-h b{display:block;font-size:14.5px}
 .mt-h small{color:var(--mute);font-size:12px}
-.bar{height:6px;border-radius:3px;background:var(--line);margin:10px 0;overflow:hidden}
+.bar{height:8px;border-radius:4px;background:var(--surface2);border:1px solid var(--line);margin:10px 0;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--ok);border-radius:3px;transition:width .4s}
 .pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);color:var(--ink2);white-space:nowrap}
 .pill.ready{background:var(--ok-soft);color:var(--ok);border-color:transparent}
@@ -373,19 +404,16 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
   <div id="blkList"></div>
 </aside>
 
-<aside class="sheet" id="libSheet" aria-label="Biblioteca" role="dialog">
-  <div class="grab"></div>
+<aside class="sheet" id="libSheet" aria-label="Minhas reuniões" role="dialog">
   <div class="sh-h"><h3>Minhas reuniões</h3><button class="icon-btn" data-close aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button></div>
-  <div class="tools" style="margin-bottom:14px">
-    <label class="btn dark" style="position:relative"><svg class="i s"><use href="#i-upload"/></svg>Importar reunião (.json)<input type="file" id="file" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
-  </div>
-  <details class="grp" style="padding:4px 14px 12px"><summary>Não consegue escolher o arquivo? Cole o conteúdo</summary>
-    <p class="tip">Abra o .json em qualquer app de texto, copie tudo e cole aqui.</p>
-    <textarea id="pasteBox" rows="4" style="width:100%;font:13px ui-monospace,monospace;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px"></textarea>
-    <button class="btn sm dark" id="pasteBtn" style="margin-top:8px">Importar texto colado</button>
-  </details>
+  <p class="drawer-sub">Escolha a reunião que quer estudar.</p>
   <div id="libList"></div>
-  <p class="tip">Fluxo: <b>Estudando</b> → ao marcar 80% dos termos fica <b>Pronta para assistir</b> → assista à gravação inteira → marque <b>Compreendida</b> (vai para o arquivo; dá para reabrir) ou remova. As reuniões ficam salvas neste aparelho; o arquivo .json no OneDrive é o seu backup.</p>
+  <details class="addm"><summary><svg class="i s"><use href="#i-upload"/></svg>Adicionar reunião</summary>
+    <label class="btn" style="position:relative;margin-top:10px"><svg class="i s"><use href="#i-upload"/></svg>Escolher arquivo .json<input type="file" id="file" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+    <p class="tip">Ou cole o conteúdo do arquivo:</p>
+    <textarea id="pasteBox" rows="3" style="width:100%;font:13px ui-monospace,monospace;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px"></textarea>
+    <button class="btn sm" id="pasteBtn" style="margin-top:8px">Importar texto colado</button>
+  </details>
 </aside>
 
 <div class="toast" id="toast" role="status"></div>
@@ -402,13 +430,16 @@ const synth = window.speechSynthesis;
 /* ---------- state ---------- */
 const S = Object.assign({reps:7,pause:1.2,rate:0.85,unit:'term',repeat:'off',pt:true,ex:true,echo:true,skip:false,quiz:false,wake:true,ven:'',vpt:'',size:1,panel:'navy'}, store.get('el.set3',{}));
 const saveS = () => store.set('el.set3', S);
-let lib = store.get('el.lib', {});            // id -> meeting {id,title,date,length,blocks,status,added}
+const NS = EMBED.some(m=>/-pub$/.test(m.id)) ? 'cel' : 'pc';   // each build keeps its own library
+const K = n => 'el.' + NS + '.' + n;
+let lib = store.get(K('lib'), null);
+if(!lib){ lib = {}; const old = store.get('el.lib', {}); for(const [id,m] of Object.entries(old)){ if((NS==='cel') === /-pub$/.test(id)) lib[id] = m; } }
 let known = store.get('el.known', {});         // "id|term" -> 1
-const deleted = store.get('el.deleted', []);
+const deleted = store.get(K('deleted'), []);
 EMBED.forEach((m,i)=>{ if(deleted.includes(m.id)) return; lib[m.id] = {...m, status: lib[m.id]?.status || 'estudando', added: lib[m.id]?.added || (Date.now() - i)}; });
-store.set('el.lib', lib);
-let curId = store.get('el.cur', null); if(!lib[curId] || lib[curId].status==='compreendida') curId = Object.values(lib).find(m=>m.status!=='compreendida')?.id || null;
-let bIdx = store.get('el.block', 0), curRow = 0, token = 0, playing = false, wakeLock = null;
+store.set(K('lib'), lib);
+let curId = store.get(K('cur'), null); if(!lib[curId] || lib[curId].status==='compreendida') curId = Object.values(lib).find(m=>m.status!=='compreendida')?.id || null;
+let bIdx = store.get(K('block'), 0), curRow = 0, token = 0, playing = false, wakeLock = null;
 
 const M = () => lib[curId];
 const B = () => M()?.blocks[bIdx];
@@ -654,31 +685,36 @@ function renderBlkList(){
       <span class="bk-t"><b>${esc(b.title)}</b><small>${k} de ${b.rows.length} aprendidos</small><span class="bk-bar"><i style="width:${p}%"></i></span></span>
       ${cur ? '<span class="bk-now">Agora</span>' : ''}</button>`; }).join('');
 }
-function goBlock(i){ pause(); bIdx = i; curRow = 0; store.set('el.block', bIdx); render(); window.scrollTo({top:0}); }
+function goBlock(i){ pause(); bIdx = i; curRow = 0; store.set(K('block'), bIdx); render(); window.scrollTo({top:0}); }
 function markRow(i){
   document.querySelectorAll('.row').forEach(r=>r.classList.toggle('cur', +r.dataset.i===i));
   const el = document.querySelector(`.row[data-i="${i}"]`);
   if(el && playing){ const rc = el.getBoundingClientRect(); if(rc.top < 70 || rc.bottom > innerHeight - 100) el.scrollIntoView({block:'center', behavior:'smooth'}); }
 }
 function renderLib(){
-  const ms = Object.values(lib).sort((a,b)=> (a.status==='compreendida') - (b.status==='compreendida') || b.added - a.added);
-  $('libList').innerHTML = ms.length ? ms.map(m=>{ const p = pctOf(m);
-    const st = m.status==='compreendida' ? ['done','Compreendida'] : p>=80 ? ['ready','Pronta para assistir'] : ['','Estudando'];
-    return `<div class="mt ${m.id===curId?'active':''}">
-      <div class="mt-h"><div class="ttx"><b>${esc(m.title)}</b><small>${esc(m.date)} · ${esc(m.length||'')}</small></div><span class="pill ${st[0]}">${st[1]}</span></div>
-      <div class="bar"><i style="width:${p}%"></i></div>
-      <div class="tools">
-        ${m.status==='compreendida'
-          ? `<button class="btn sm" data-act="reopen" data-id="${esc(m.id)}">${ico('undo','s')}Voltar a estudar</button>`
-          : `<button class="btn sm ${m.id===curId?'':'dark'}" data-act="open" data-id="${esc(m.id)}">${ico('play','s')}${m.id===curId?'Aberta':'Estudar'}</button>
-             <button class="btn sm" data-act="done" data-id="${esc(m.id)}">${ico('archive','s')}Compreendida</button>`}
-        <button class="btn sm danger" data-act="ask" data-id="${esc(m.id)}">${ico('trash','s')}Remover</button>
+  const all = Object.values(lib).sort((a,b)=> b.added - a.added);
+  const act = all.filter(m=>m.status!=='compreendida'), done = all.filter(m=>m.status==='compreendida');
+  const card = m => { const p = pctOf(m), cur = m.id===curId, fin = m.status==='compreendida', id = esc(m.id);
+    const tag = cur ? '<span class="tag now">Aberta</span>' : (!fin && p>=80 ? '<span class="tag ready">Pronta para assistir</span>' : '');
+    return `<div class="mcard ${cur?'cur':''} ${fin?'fin':''}">
+      <button class="m-head" data-act="${fin?'reopen':'open'}" data-id="${id}">
+        <span class="m-top"><b>${esc(m.title)}</b>${tag}</span>
+        <span class="m-meta">${esc(m.date)}${m.length?' · '+esc(m.length):''}</span>
+      </button>
+      <div class="m-body"><span class="m-prog"><span class="bk-bar"><i style="width:${p}%"></i></span>${p}% aprendido</span></div>
+      <div class="m-act">
+        ${fin ? `<button class="ma go" data-act="reopen" data-id="${id}">${ico('undo','s')}Reabrir</button>`
+              : `<button class="ma go ${cur?'on':''}" data-act="open" data-id="${id}">${ico(cur?'headphones':'play','s')}${cur?'Estudando':'Estudar'}</button>
+                 <button class="ma ok" data-act="done" data-id="${id}">${ico('check','s')}Compreendi</button>`}
+        <button class="ma del" data-act="ask" data-id="${id}">${ico('trash','s')}Remover</button>
       </div>
-      <div class="confirm" data-confirm="${esc(m.id)}">Remover deste aparelho? <button class="btn sm danger" data-act="del" data-id="${esc(m.id)}">Remover</button><button class="btn sm" data-act="cancel">Cancelar</button></div>
-    </div>`; }).join('') : '<p class="tip">Nenhuma reunião ainda.</p>';
+      <div class="m-confirm" data-confirm="${id}">Remover deste aparelho? <button class="btn sm danger" data-act="del" data-id="${id}">Sim, remover</button><button class="btn sm" data-act="cancel">Cancelar</button></div>
+    </div>`; };
+  $('libList').innerHTML = (act.length ? `<div class="lib-h">Estudando (${act.length})</div>` + act.map(card).join('') : '<p class="tip">Nenhuma reunião em estudo.</p>')
+    + (done.length ? `<div class="lib-h done">Já compreendidas (${done.length})</div>` + done.map(card).join('') : '');
 }
 function toast(msg){ const t=$('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('on'), 2200); }
-const saveLib = () => store.set('el.lib', lib);
+const saveLib = () => store.set(K('lib'), lib);
 
 /* ---------- sheets & settings ---------- */
 function openSheet(id){ $(id).classList.add('open'); $('scrim').classList.add('open'); if(id==='libSheet') renderLib(); if(id==='blkSheet') renderBlkList(); if(id==='setSheet') syncSet(); }
@@ -757,27 +793,28 @@ $('main').addEventListener('change', e => { if(e.target.matches('[data-import]')
 /* ---------- library ---------- */
 function addMeetings(d){ if(!Array.isArray(d)) d = [d]; let n = 0;
   for(const m of d){ if(!m || !m.id || !Array.isArray(m.blocks)) continue; lib[m.id] = {...m, status: lib[m.id]?.status || 'estudando', added: lib[m.id]?.added || Date.now()}; n++; curId = m.id;
-    const di = deleted.indexOf(m.id); if(di>=0){ deleted.splice(di,1); store.set('el.deleted', deleted); } }
+    const di = deleted.indexOf(m.id); if(di>=0){ deleted.splice(di,1); store.set(K('deleted'), deleted); } }
   return n; }
-function afterImport(n){ if(n){ saveLib(); store.set('el.cur', curId); bIdx = 0; curRow = 0; render(); renderLib(); closeSheets(); toast(n===1 ? 'Reunião importada' : n + ' reuniões importadas'); } else toast('Nenhuma reunião encontrada nesse conteúdo'); }
+function afterImport(n){ if(n){ saveLib(); store.set(K('cur'), curId); bIdx = 0; curRow = 0; render(); renderLib(); closeSheets(); toast(n===1 ? 'Reunião importada' : n + ' reuniões importadas'); } else toast('Nenhuma reunião encontrada nesse conteúdo'); }
 $('pasteBtn').onclick = () => { try{ afterImport(addMeetings(JSON.parse($('pasteBox').value.trim()))); $('pasteBox').value=''; }catch(e){ toast('Conteúdo inválido: copie o arquivo inteiro'); } };
 async function importFiles(files){
   let n = 0;
   for(const f of files){ try{ let d = JSON.parse(await f.text()); if(!Array.isArray(d)) d = [d];
       for(const m of d){ if(!m.id || !Array.isArray(m.blocks)) continue; lib[m.id] = {...m, status: lib[m.id]?.status || 'estudando', added: lib[m.id]?.added || Date.now()}; n++; curId = m.id;
-        const di = deleted.indexOf(m.id); if(di>=0){ deleted.splice(di,1); store.set('el.deleted', deleted); } } }
+        const di = deleted.indexOf(m.id); if(di>=0){ deleted.splice(di,1); store.set(K('deleted'), deleted); } } }
     catch(err){ toast('Arquivo inválido: ' + f.name); } }
-  if(n){ saveLib(); store.set('el.cur', curId); bIdx = 0; curRow = 0; render(); renderLib(); toast(n===1 ? 'Reunião importada' : n + ' reuniões importadas'); }
+  if(n){ saveLib(); store.set(K('cur'), curId); bIdx = 0; curRow = 0; render(); renderLib(); toast(n===1 ? 'Reunião importada' : n + ' reuniões importadas'); }
 }
 $('file').onchange = e => importFiles(e.target.files);
 $('libList').onclick = e => {
   const b = e.target.closest('button'); if(!b) return; const id = b.dataset.id, a = b.dataset.act;
-  if(a==='open'){ pause(); curId = id; store.set('el.cur', id); bIdx = 0; curRow = 0; render(); renderLib(); closeSheets(); }
-  if(a==='done'){ lib[id].status = 'compreendida'; saveLib(); if(id===curId){ pause(); curId = Object.values(lib).find(m=>m.status!=='compreendida')?.id || null; bIdx=0; curRow=0; render(); } renderLib(); toast('Reunião arquivada como compreendida'); }
-  if(a==='reopen'){ lib[id].status = 'estudando'; saveLib(); renderLib(); }
-  if(a==='ask'){ document.querySelectorAll('.confirm').forEach(c=>c.classList.toggle('open', c.dataset.confirm===id)); }
-  if(a==='cancel'){ document.querySelectorAll('.confirm').forEach(c=>c.classList.remove('open')); }
-  if(a==='del'){ delete lib[id]; saveLib(); if(!deleted.includes(id)){ deleted.push(id); store.set('el.deleted', deleted); }
+  if(a==='open'){ pause(); curId = id; store.set(K('cur'), id); bIdx = 0; curRow = 0; render(); renderLib(); closeSheets(); }
+  if(a==='done'){ lib[id].status = 'compreendida'; saveLib(); if(id===curId){ pause(); curId = Object.values(lib).find(m=>m.status!=='compreendida')?.id || null; bIdx=0; curRow=0; render(); } renderLib(); toast('Movida para Já compreendidas'); }
+  if(a==='reopen'){ lib[id].status = 'estudando'; saveLib(); pause(); curId = id; store.set(K('cur'), id); bIdx = 0; curRow = 0; render(); renderLib(); closeSheets(); toast('De volta aos estudos'); }
+  if(a==='opts'){ const c = b.closest('.mcard'); c.classList.toggle('opts'); }
+  if(a==='ask'){ document.querySelectorAll('.m-confirm,.confirm').forEach(c=>c.classList.toggle('open', c.dataset.confirm===id)); }
+  if(a==='cancel'){ document.querySelectorAll('.m-confirm,.confirm').forEach(c=>c.classList.remove('open')); }
+  if(a==='del'){ delete lib[id]; saveLib(); if(!deleted.includes(id)){ deleted.push(id); store.set(K('deleted'), deleted); }
     if(id===curId){ pause(); curId = Object.values(lib).find(m=>m.status!=='compreendida')?.id || null; bIdx=0; curRow=0; render(); } renderLib(); toast('Reunião removida deste aparelho'); }
 };
 
@@ -790,7 +827,7 @@ document.addEventListener('keydown', e => {
 matchMedia('(min-width:960px)').addEventListener('change', () => { if(M()) { if(matchMedia('(min-width:960px)').matches) $('stage').after($('transport')); else document.body.appendChild($('transport')); } });
 document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible' && playing && S.wake) wake(true); });
 
-if(curId) store.set('el.cur', curId);
+if(curId) store.set(K('cur'), curId);
 applyView(); syncTransport(); render();
 if('serviceWorker' in navigator && /^https:/.test(location.protocol) && !/claude/.test(location.host)){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 }

@@ -308,6 +308,46 @@ select{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media(prefers-reduced-motion:reduce){*:not(.sheet):not(.scrim),*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* ---- lively skin: topic card, term rows, topics drawer ---- */
+.topic{padding:0;overflow:hidden;border:1px solid var(--line);box-shadow:0 4px 14px rgba(16,35,58,.10)}
+.tp-head{padding:16px 16px 14px;background:linear-gradient(135deg,var(--panel,#173a5e) 0%,color-mix(in srgb,var(--panel,#173a5e) 78%,#3a7bd5) 100%);color:#fff}
+.tp-head .tp-top{color:#d3dfeb}
+.tp-pill{background:rgba(255,255,255,.16);color:#fff;padding:3px 10px;border-radius:999px;font-size:13px}
+.tp-head .tp-title{color:#fff}
+.tp-head .tp-desc{color:#dbe6f1;margin:0}
+.tp-body{padding:14px 14px 14px}
+.tp-bar,.bk-bar{height:10px;border-radius:5px;background:#e9eef4;border:0;box-shadow:inset 0 0 0 1px rgba(16,35,58,.18)}
+.tp-bar i,.bk-bar i{background:linear-gradient(90deg,#16a34a,#22c55e)}
+.tp-btn{border:0;background:#e3ecf7;color:var(--panel,#173a5e)}
+.tp-btn:hover{background:#d4e2f3}
+.tp-btn.main{background:var(--panel,#173a5e);color:#fff}
+.tp-btn:disabled{background:#eef2f6;color:#9aa7b5;opacity:1}
+@media(max-width:520px){.tp-actions{grid-template-columns:56px 1fr 56px}.tp-btn .tl{display:none}.tp-btn{font-size:16px}}
+/* term rows */
+.row{background:#fff;border:1px solid var(--line);box-shadow:0 3px 10px rgba(16,35,58,.08)}
+.row:hover{box-shadow:0 6px 16px rgba(16,35,58,.13)}
+.num{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#e3ecf7;color:var(--panel,#173a5e);font-weight:800;font-size:14px}
+.row.cur{background:#fffbe6;border-color:#ffd400;box-shadow:0 0 0 3px #ffd400,0 6px 16px rgba(16,35,58,.13)}
+.row.cur .num{background:#ffd400;color:#10233a}
+.rb{border:0;background:var(--panel,#173a5e);color:#fff}
+.rb:hover{filter:brightness(1.12);color:#fff}
+.rb.k{background:#dcf5e6;color:#0b6b31}
+.rb.k[aria-pressed=true]{background:#16a34a;color:#fff}
+.row.known{background:#f3fbf6}
+.row.known .rtxt b{color:#0b6b31}
+.hc .row.cur{box-shadow:0 0 0 4px #ffd400}
+/* topics drawer */
+.blk{background:#fff;border:1px solid var(--line);box-shadow:0 3px 10px rgba(16,35,58,.08);padding:14px}
+.blk:hover{box-shadow:0 6px 16px rgba(16,35,58,.14);background:#fff}
+.bk-n{background:#e3ecf7;border:0;color:var(--panel,#173a5e);width:42px;height:42px;font-size:17px}
+.blk[aria-current=true]{background:linear-gradient(135deg,var(--panel,#173a5e) 0%,color-mix(in srgb,var(--panel,#173a5e) 78%,#3a7bd5) 100%);border:0;box-shadow:0 0 0 3px #ffd400,0 6px 16px rgba(16,35,58,.18);color:#fff}
+.blk[aria-current=true] .bk-t small{color:#d3dfeb}
+.blk[aria-current=true] .bk-n{background:#ffd400;color:#10233a}
+.blk[aria-current=true] .bk-bar{background:rgba(255,255,255,.22);box-shadow:none}
+.bk-now{background:#ffd400;color:#10233a}
+.bk-done .bk-n{background:#16a34a;color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .row,:root:not([data-theme=light]) .blk{background:var(--surface)}}
 </style>
 </head>
 <body>
@@ -666,15 +706,17 @@ function renderBlockNav(){
   const m = M(), b = B(), el = $('blocknav'); if(!el) return;
   const k = b.rows.filter(r=>known[kkey(r)]).length, p = Math.round(100*k/b.rows.length);
   el.innerHTML = `<section class="topic" aria-label="Tema atual">
-    <div class="tp-top"><span>Tema ${bIdx+1} de ${m.blocks.length}</span><span>${k} de ${b.rows.length} aprendidos</span></div>
+    <div class="tp-head">
+    <div class="tp-top"><span>Tema ${bIdx+1} de ${m.blocks.length}</span><span class="tp-pill">${k} de ${b.rows.length} aprendidos</span></div>
     <div class="tp-title">${esc(b.title)}</div>
     ${b.desc ? `<p class="tp-desc">${esc(b.desc)}</p>` : ''}
+    </div><div class="tp-body">
     <div class="tp-bar" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div>
     <div class="tp-actions">
-      <button class="tp-btn" data-bnav="-1" ${bIdx===0?'disabled':''} aria-label="Tema anterior">${ico('prev')}Anterior</button>
+      <button class="tp-btn" data-bnav="-1" ${bIdx===0?'disabled':''} aria-label="Tema anterior">${ico('prev')}<span class="tl">Anterior</span></button>
       <button class="tp-btn main" id="bnOpen">${ico('library')}Ver temas</button>
-      <button class="tp-btn" data-bnav="1" ${bIdx===m.blocks.length-1?'disabled':''} aria-label="Próximo tema">Próximo${ico('next')}</button>
-    </div></section>`;
+      <button class="tp-btn" data-bnav="1" ${bIdx===m.blocks.length-1?'disabled':''} aria-label="Próximo tema"><span class="tl">Próximo</span>${ico('next')}</button>
+    </div></div></section>`;
 }
 function renderBlkList(){
   const m = M(); if(!m) return;
